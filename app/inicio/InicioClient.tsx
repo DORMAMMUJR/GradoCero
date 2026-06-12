@@ -36,6 +36,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
+import { Footer } from '@/components/layout/Footer';
 
 // === DEFINICIONES DE TIPOS ===
 interface Product {
@@ -315,7 +316,9 @@ export default function InicioClient() {
   const [smsCode, setSmsCode] = useState<string>('');
   const [smsCountdown, setSmsCountdown] = useState<number>(60);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(false);
+  const [isStripeLoading, setIsStripeLoading] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState<boolean>(false);
 
   // === ESTADOS DE IA ORIENTADORA ===
@@ -611,6 +614,58 @@ export default function InicioClient() {
         }
       }
     }, 1500);
+  };
+
+  // Enviar el carrito al controlador de pasarela de Stripe B2B o simulación
+  const handleStripeCheckout = async () => {
+    if (cart.length === 0) return;
+    if (!currentUser) {
+      setAuthStep('email');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    setIsStripeLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(item => ({
+            productId: item.product.id,
+            quantity: item.quantity
+          })),
+          user: {
+            email: currentUser.email,
+            name: currentUser.name,
+            companyName: currentUser.companyName
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        setCheckoutError(data.error);
+        return;
+      }
+
+      if (data.url) {
+        // Limpiamos los estados locales
+        updateCartState([]);
+        setOrderNotes('');
+        setIsCartOpen(false);
+        // Redirección directa hacia la pasarela de Stripe (o simulación exitosa)
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      console.error("Fallo durante el checkout con Stripe:", error);
+      setCheckoutError("Ocurrió un inconveniente al conectar con el servidor de pagos.");
+    } finally {
+      setIsStripeLoading(false);
+    }
   };
 
   // === LOGICA DE AUTENTICACION SIMULADA MERCADO LIBRE ===
@@ -2056,22 +2111,46 @@ export default function InicioClient() {
                       </div>
 
                       {/* Botón de envío final */}
-                      <div className="pt-2">
+                      <div className="pt-2 space-y-2">
+                        {checkoutError && (
+                          <div className="p-2.5 bg-orange-500/10 border border-orange-500/25 rounded-xl text-center">
+                            <p className="text-[10px] text-orange-400 font-medium leading-relaxed">
+                              {checkoutError}
+                            </p>
+                          </div>
+                        )}
                         {isAuthenticated && currentUser ? (
-                          <button 
-                            onClick={handleFinalizeQuoteSubmission}
-                            disabled={isAuthLoading}
-                            className="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-orange-500/20"
-                            id="btn-confirmar-cotizacion"
-                          >
-                            {isAuthLoading ? (
-                              <>
-                                <Loader2 size={14} className="animate-spin" /> Procesando Suministro...
-                              </>
-                            ) : (
-                              'Confirmar Solicitud de Cotización B2B'
-                            )}
-                          </button>
+                          <>
+                            <button 
+                              onClick={handleFinalizeQuoteSubmission}
+                              disabled={isAuthLoading || isStripeLoading}
+                              className="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-orange-500/20"
+                              id="btn-confirmar-cotizacion"
+                            >
+                              {isAuthLoading ? (
+                                <>
+                                  <Loader2 size={14} className="animate-spin" /> Procesando Suministro...
+                                </>
+                              ) : (
+                                'Confirmar Solicitud de Cotización B2B'
+                              )}
+                            </button>
+
+                            <button 
+                              onClick={handleStripeCheckout}
+                              disabled={isAuthLoading || isStripeLoading}
+                              className="w-full bg-neutral-900 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-850 disabled:opacity-55 text-neutral-200 hover:text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow"
+                              id="btn-pagar-stripe"
+                            >
+                              {isStripeLoading ? (
+                                <>
+                                  <Loader2 size={14} className="animate-spin" /> Conectando Pasarela...
+                                </>
+                              ) : (
+                                'Proceder al Pago B2B con Tarjeta 💳'
+                              )}
+                            </button>
+                          </>
                         ) : (
                           <div className="space-y-2">
                             <button 
@@ -2082,7 +2161,7 @@ export default function InicioClient() {
                               }}
                               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow"
                             >
-                              Inicia sesión para poder Cotizar
+                              Inicia sesión para Cotizar o Comprar
                             </button>
                             <p className="text-[10px] text-center text-neutral-500 leading-tight">
                               Necesitas autenticar tu e-mail corporativo o número telefónico al comprar para generar facturación y estimaciones exactas en el Almacén.
@@ -2277,6 +2356,9 @@ export default function InicioClient() {
           )}
         </motion.button>
       </div>
+
+      {/* PIE DE PÁGINA CORPORATIVO */}
+      <Footer />
 
     </div>
   );

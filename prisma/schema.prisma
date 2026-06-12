@@ -12,6 +12,7 @@ datasource db {
 
 enum Role {
   ADMIN
+  CUSTOMER
   STAFF
 }
 
@@ -36,6 +37,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   quotes    Quote[]
+  orders    Order[]
 }
 
 model Supplier {
@@ -70,6 +72,7 @@ model Product {
   supplierId    String
   supplier      Supplier      @relation(fields: [supplierId], references: [id])
   quoteItems    QuoteItem[]
+  orderItems    OrderItem[]
   
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -113,4 +116,26 @@ model QuoteItem {
   quote     Quote   @relation(fields: [quoteId], references: [id])
   productId String
   product   Product @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String      // Relación con el usuario que compra
+  user          User        @relation(fields: [userId], references: [id])
+  status        String      @default("PENDING") // PENDING, PAID, FAILED
+  total         Float
+  paymentId     String?     // ID de la transacción en Stripe o Mercado Pago
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[] 
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float   // Guardas el precio al momento de la compra
 }
