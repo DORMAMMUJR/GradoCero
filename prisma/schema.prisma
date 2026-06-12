@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+enum QuoteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quotes    Quote[]
+}
+
+model Supplier {
+  id          String    @id @default(cuid())
+  name        String
+  contactInfo String?
+  email       String?
+  phone       String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  sku           String        @unique
+  name          String
+  description   String?
+  category      String
+  imageUrl      String?
+  
+  // Costs and margins
+  purchaseCost  Float
+  
+  // Inventory
+  stock         Int           @default(0)
+  
+  // Status / Soft Delete
+  status        ProductStatus @default(DRAFT)
+  
+  // Relations
+  supplierId    String
+  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  quoteItems    QuoteItem[]
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  companyName String
+  contactName String?
+  email       String   @unique
+  phone       String?
+  address     String?
+  quotes      Quote[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quote {
+  id        String      @id @default(cuid())
+  status    QuoteStatus @default(PENDING)
+  notes     String?
+  
+  // Relations
+  clientId  String
+  client    Client      @relation(fields: [clientId], references: [id])
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  items     QuoteItem[]
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  unitPrice Float   // Price saved at the time of quotation
+  
+  // Relations
+  quoteId   String
+  quote     Quote   @relation(fields: [quoteId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
