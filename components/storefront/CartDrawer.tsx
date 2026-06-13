@@ -34,30 +34,30 @@ export function CartDrawer({
     setError('');
 
     try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: lines.map((line) => ({
-            productId: line.product.id,
-            quantity: line.quantity,
-          })),
-          customer: { name, email },
-        }),
+      const phoneNumber = "525611614074";
+      let text = `*NUEVA SOLICITUD DE PEDIDO B2B*\n\n`;
+      text += `*Cliente:* ${name}\n`;
+      text += `*Correo:* ${email}\n\n`;
+      text += `*Productos:*\n`;
+      lines.forEach(line => {
+        text += `- ${line.quantity}x ${line.product.name} (SKU: ${line.product.sku}) - ${formatMoney(line.product.salePriceCents * line.quantity)}\n`;
       });
-      const payload = (await response.json()) as {
-        url?: string;
-        error?: string;
-      };
+      text += `\n*TOTAL:* ${formatMoney(totalCents)}\n`;
+      text += `\nHola, me interesa concretar este pedido.`;
 
-      if (!response.ok || !payload.url) {
-        throw new Error(payload.error || 'CHECKOUT_FAILED');
-      }
+      const encodedText = encodeURIComponent(text);
+      const url = `https://wa.me/${phoneNumber}?text=${encodedText}`;
 
-      window.location.assign(payload.url);
+      window.open(url, '_blank');
+      
+      // Reset form and close drawer after sending
+      setSubmitting(false);
+      setName('');
+      setEmail('');
+      onOpenChange(false);
     } catch {
       setError(
-        'No fue posible iniciar el pago. Revisa los datos e intenta de nuevo.',
+        'No fue posible iniciar el pedido. Revisa los datos e intenta de nuevo.',
       );
       setSubmitting(false);
     }
@@ -181,10 +181,10 @@ export function CartDrawer({
             <button
               type="submit"
               disabled={lines.length === 0 || submitting}
-              className="primary-button w-full justify-center py-3"
+              className="primary-button w-full justify-center py-3 bg-[#10B981] text-white hover:bg-[#059669] border-none shadow-lg shadow-[#10B981]/20"
             >
               <ShoppingCart aria-hidden="true" className="size-5" />
-              {submitting ? 'Conectando con Stripe…' : 'Pagar con Stripe'}
+              {submitting ? 'Generando pedido…' : 'Enviar Pedido por WhatsApp'}
             </button>
           </form>
         </Dialog.Content>

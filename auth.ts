@@ -1,27 +1,41 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
+import Resend from 'next-auth/providers/resend';
 import { PrismaAdapter } from '@auth/prisma-adapter';
+import { resolveAuthProviderConfig } from '@/lib/auth/provider-config';
 import { getPrisma } from '@/lib/prisma';
 
-const googleCredentialsConfigured = Boolean(
-  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET,
-);
+export const authProviderConfig = resolveAuthProviderConfig(process.env);
+
+const providers = [];
+
+if (authProviderConfig.googleEnabled) {
+  providers.push(
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    }),
+  );
+}
+
+if (authProviderConfig.resendEnabled) {
+  providers.push(
+    Resend({
+      apiKey: process.env.AUTH_RESEND_KEY,
+      from: authProviderConfig.resendFrom!,
+    }),
+  );
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(getPrisma()),
   session: {
     strategy: 'database',
   },
-  providers: googleCredentialsConfigured
-    ? [
-        Google({
-          clientId: process.env.AUTH_GOOGLE_ID,
-          clientSecret: process.env.AUTH_GOOGLE_SECRET,
-        }),
-      ]
-    : [],
+  providers,
   pages: {
     signIn: '/auth/signin',
+    verifyRequest: '/auth/verify-request',
   },
   callbacks: {
     session({ session, user }) {
@@ -32,4 +46,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 });
 
-export { googleCredentialsConfigured };
+export const googleCredentialsConfigured = authProviderConfig.googleEnabled;
+export const resendCredentialsConfigured = authProviderConfig.resendEnabled;

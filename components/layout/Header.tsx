@@ -14,6 +14,7 @@ interface HeaderProps {
   onLogoutClick?: () => void;
   cartCount?: number;
   onAssistantToggle?: () => void;
+  onCartClick?: () => void;
 }
 
 /**
@@ -25,7 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   onLoginClick,
   onLogoutClick,
   cartCount = 0,
-  onAssistantToggle
+  onAssistantToggle,
+  onCartClick
 }) => {
   return (
     <header 
@@ -68,6 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
               size="sm" 
               className="p-2 relative text-neutral-400 hover:text-neutral-100"
               id="btn-header-cart"
+              onClick={onCartClick}
             >
               <ShoppingCart size={18} />
               {cartCount > 0 && (

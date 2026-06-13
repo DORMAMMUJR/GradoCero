@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Geist } from 'next/font/google';
+import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
 const geist = Geist({
@@ -26,7 +27,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es-MX" className={`${geist.variable} ${cormorant.variable} dark`}>
+    <html
+      lang="es-MX"
+      className={`${geist.variable} ${cormorant.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-screen bg-neutral-950 font-sans text-neutral-100 antialiased">
         {children}
       </body>
