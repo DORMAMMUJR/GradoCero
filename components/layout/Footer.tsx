@@ -39,14 +39,14 @@ export const Footer: React.FC = () => {
   return (
     <footer 
       id="grado-cero-footer" 
-      className="relative z-30 bg-neutral-950 border-t border-neutral-900 text-neutral-400 font-sans mt-auto"
+      className="relative z-30 bg-zinc-950 border-t border-white/10 text-neutral-400 font-sans mt-auto"
     >
       {/* Botón flotante interno para regresar hacia arriba de forma elegante */}
       <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2">
         <button
           onClick={scrollToTop}
           id="btn-footer-scroll-top"
-          className="flex items-center justify-center p-3 rounded-full bg-neutral-900 border border-neutral-800 hover:border-orange-500 hover:text-white text-neutral-400 transition-all duration-300 shadow-xl group hover:scale-105 active:scale-95"
+          className="flex items-center justify-center p-3 rounded-full bg-neutral-900 border border-neutral-800 hover:border-amber-500 hover:text-white text-neutral-400 transition-all duration-300 shadow-xl group hover:scale-105 active:scale-95"
           title="Volver al inicio"
         >
           <ArrowUp size={16} className="transition-transform group-hover:-translate-y-0.5" />
@@ -59,11 +59,11 @@ export const Footer: React.FC = () => {
           {/* Columna 1: Branding y Propósito */}
           <div className="md:col-span-4 space-y-6" id="footer-branding-section">
             <div className="flex items-center gap-2.5">
-              <span className="p-2 bg-orange-500 rounded-xl text-white font-black text-sm tracking-wide">
+              <span className="p-2 bg-amber-500 rounded-xl text-white font-black text-sm tracking-wide">
                 GC
               </span>
               <span className="font-sans font-extrabold tracking-tight text-white text-lg">
-                Grado Cero <span className="text-orange-500 text-xs font-mono font-normal">B2B</span>
+                Grado Cero <span className="text-amber-500 text-xs font-mono font-normal">B2B</span>
               </span>
             </div>
             
@@ -74,7 +74,7 @@ export const Footer: React.FC = () => {
             <div className="space-y-3 pt-2">
               <h5 className="text-[10px] uppercase tracking-widest font-mono text-neutral-500 font-bold">Distribuidor Autorizado</h5>
               <div className="flex items-center gap-2 text-xs text-neutral-300">
-                <Award size={14} className="text-orange-500" />
+                <Award size={14} className="text-amber-500" />
                 <span>Normas de Calidad Química Industrial</span>
               </div>
             </div>
@@ -85,17 +85,17 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-300 font-bold">Catálogo</h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <Link href="/inicio" id="link-footer-home" className="hover:text-orange-500 transition-colors">
+                <Link href="/inicio" id="link-footer-home" className="hover:text-amber-500 transition-colors">
                   Inicio
                 </Link>
               </li>
               <li>
-                <Link href="/inicio?category=all" id="link-footer-products" className="hover:text-orange-500 transition-colors">
+                <Link href="/inicio?category=all" id="link-footer-products" className="hover:text-amber-500 transition-colors">
                   Productos
                 </Link>
               </li>
               <li>
-                <Link href="/admin" id="link-footer-admin" className="hover:text-orange-500 transition-colors">
+                <Link href="/admin" id="link-footer-admin" className="hover:text-amber-500 transition-colors">
                   Módulo de Carga
                 </Link>
               </li>
@@ -110,7 +110,7 @@ export const Footer: React.FC = () => {
                 <Link 
                   href="/legal/terminos" 
                   id="link-footer-terms" 
-                  className="flex items-center gap-2 hover:text-orange-500 transition-colors text-neutral-400"
+                  className="flex items-center gap-2 hover:text-amber-500 transition-colors text-neutral-400"
                 >
                   <FileText size={14} className="text-neutral-500" />
                   <span>Términos y Condiciones</span>
@@ -120,7 +120,7 @@ export const Footer: React.FC = () => {
                 <Link 
                   href="/legal/privacidad" 
                   id="link-footer-privacy" 
-                  className="flex items-center gap-2 hover:text-orange-500 transition-colors text-neutral-400"
+                  className="flex items-center gap-2 hover:text-amber-500 transition-colors text-neutral-400"
                 >
                   <ShieldCheck size={14} className="text-neutral-500" />
                   <span>Aviso de Privacidad</span>
@@ -130,7 +130,7 @@ export const Footer: React.FC = () => {
                 <Link 
                   href="/legal/privacidad#contacto" 
                   id="link-footer-compliance" 
-                  className="flex items-center gap-2 hover:text-orange-500 transition-colors text-neutral-400"
+                  className="flex items-center gap-2 hover:text-amber-500 transition-colors text-neutral-400"
                 >
                   <BookOpen size={14} className="text-neutral-500" />
                   <span>Cumplimiento Legal</span>
@@ -144,25 +144,25 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-300 font-bold">Soporte Técnico Corporativo</h4>
             <ul className="space-y-3 text-xs">
               <li className="flex items-start gap-2.5">
-                <MapPin size={15} className="text-orange-500 shrink-0 mt-0.5" />
+                <MapPin size={15} className="text-amber-500 shrink-0 mt-0.5" />
                 <span className="text-neutral-400 leading-normal">
                   Paseo de la Reforma 250, Juárez, 06600 Ciudad de México, CDMX, México
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Mail size={15} className="text-orange-500 shrink-0" />
-                <a href="mailto:info@gradocero.mx" id="link-footer-email" className="hover:text-orange-500 transition-colors truncate">
+                <Mail size={15} className="text-amber-500 shrink-0" />
+                <a href="mailto:info@gradocero.mx" id="link-footer-email" className="hover:text-amber-500 transition-colors truncate">
                   info@gradocero.mx
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
-                <Phone size={15} className="text-orange-500 shrink-0" />
-                <a href="tel:+525555555555" id="link-footer-phone" className="hover:text-orange-500 transition-colors">
+                <Phone size={15} className="text-amber-500 shrink-0" />
+                <a href="tel:+525555555555" id="link-footer-phone" className="hover:text-amber-500 transition-colors">
                   +52 55 5555 5555
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
-                <MessageSquare size={15} className="text-orange-500 shrink-0" />
+                <MessageSquare size={15} className="text-amber-500 shrink-0" />
                 <span className="text-neutral-300 font-semibold">Atención 24/7 para Clientes Activos</span>
               </li>
             </ul>
@@ -171,7 +171,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Separador de sección */}
-        <div className="border-t border-neutral-900 my-10" />
+        <div className="border-t border-white/10 my-10" />
 
         {/* Bloque inferior: Redes Sociales e Información de derechos */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6" id="footer-bottom-bar">
@@ -191,7 +191,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer"
               id="link-footer-social-facebook"
-              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-orange-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800"
+              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-amber-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800"
               title="Síguenos en Facebook"
             >
               <Facebook size={16} />
@@ -201,7 +201,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer"
               id="link-footer-social-linkedin"
-              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-orange-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800"
+              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-amber-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800"
               title="Síguenos en LinkedIn"
             >
               <Linkedin size={16} />
@@ -211,7 +211,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer"
               id="link-footer-social-instagram"
-              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-orange-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800"
+              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-amber-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800"
               title="Síguenos en Instagram"
             >
               <Instagram size={16} />
@@ -221,7 +221,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer"
               id="link-footer-social-website"
-              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-orange-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800 flex items-center gap-1 text-[11px] font-mono"
+              className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-amber-500 rounded-xl transition duration-250 border border-neutral-900 hover:border-neutral-800 flex items-center gap-1 text-[11px] font-mono"
               title="Sitio Web Institucional"
             >
               <Globe size={13} />

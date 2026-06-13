@@ -30,17 +30,17 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       id="layout-header"
-      className="sticky top-0 z-40 w-full bg-neutral-950/80 backdrop-blur-md border-b border-neutral-900 px-4 sm:px-6 py-3"
+      className="sticky top-0 z-40 w-full bg-zinc-950/85 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Identidad Grado Cero */}
         <div className="flex items-center gap-2">
           <Link href="/inicio" className="flex items-center gap-2 group" id="link-header-logo">
-            <span className="p-2 bg-orange-500 rounded-xl text-white font-black text-sm tracking-wide transition group-hover:scale-105 active:scale-95">
+            <span className="p-2 bg-amber-500 rounded-xl text-white font-black text-sm tracking-wide transition group-hover:scale-105 active:scale-95">
               GC
             </span>
             <span className="font-sans font-bold tracking-tight text-neutral-100 text-sm sm:text-base hidden sm:inline-block">
-              Grado Cero <span className="text-orange-500 text-xs font-mono font-normal">B2B</span>
+              Grado Cero <span className="text-amber-500 text-xs font-mono font-normal">B2B</span>
             </span>
           </Link>
         </div>
@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="btn-header-assistant"
               className="gap-1.5 hidden md:inline-flex"
             >
-              <Bot size={15} className="text-orange-500" />
+              <Bot size={15} className="text-amber-500" />
               <span>Ayuda IA</span>
             </Button>
           )}
@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <ShoppingCart size={18} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 bg-orange-500 text-[10px] text-white font-extrabold items-center justify-center rounded-full animate-pulse">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 bg-amber-500 text-[10px] text-white font-extrabold items-center justify-center rounded-full animate-pulse">
                   {cartCount}
                 </span>
               )}

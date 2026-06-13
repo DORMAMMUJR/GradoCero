@@ -31,7 +31,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           }}
         />
       </head>
-      <body className="bg-neutral-950 text-white antialiased min-h-screen flex flex-col" suppressHydrationWarning>
+      <body className="bg-zinc-950 text-white antialiased min-h-screen flex flex-col" suppressHydrationWarning>
         {children}
       </body>
     </html>

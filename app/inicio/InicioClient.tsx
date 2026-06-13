@@ -860,10 +860,10 @@ export default function InicioClient() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-300">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans antialiased overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-300">
       
       {/* HEADER DE ALTA GAMA (FIJO) */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-neutral-950/70 backdrop-blur-md border-b border-white/5 py-4 px-4 sm:px-6 md:px-8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/85 backdrop-blur-xl border-b border-white/10 py-4 px-4 sm:px-6 md:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
           {/* Logo Corporativo */}
@@ -897,7 +897,7 @@ export default function InicioClient() {
                 placeholder="Buscar esencia, crema..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-neutral-900/60 text-xs text-neutral-200 placeholder-neutral-500 border border-white/5 rounded-full px-4 py-2 pl-9 focus:outline-none focus:border-amber-400/50 focus:w-72 transition-all duration-300"
+                className="w-full bg-zinc-800/60 text-xs text-zinc-200 placeholder-zinc-500 border border-white/10 rounded-full px-4 py-2 pl-9 focus:outline-none focus:border-amber-400/50 focus:w-72 transition-all duration-300"
               />
               <Search size={14} className="absolute left-3 top-2.5 text-neutral-500 group-focus-within:text-amber-400 transition-colors" />
             </div>
@@ -933,6 +933,8 @@ export default function InicioClient() {
               <button 
                 onClick={() => { setAuthIsRegisterState(false); setAuthModalOpen(true); }}
                 className="p-2 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                title="Abrir panel de usuario"
+                aria-label="Abrir panel de usuario"
               >
                 <User size={18} className="stroke-[1.5]" />
               </button>
@@ -942,6 +944,8 @@ export default function InicioClient() {
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              title="Abrir menú"
+              aria-label="Abrir menú"
             >
               <Menu size={20} />
             </button>
@@ -957,7 +961,7 @@ export default function InicioClient() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="fixed top-[65px] left-0 right-0 z-45 bg-neutral-950 border-b border-white/10 lg:hidden overflow-hidden flex flex-col p-6 space-y-4 text-sm font-semibold tracking-widest text-center"
+            className="fixed top-[65px] left-0 right-0 z-45 bg-zinc-950/95 backdrop-blur-xl border-b border-white/10 lg:hidden overflow-hidden flex flex-col p-6 space-y-4 text-sm font-semibold tracking-widest text-center"
           >
             <button onClick={() => { setSelectedProduct(null); window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }} className="text-neutral-300 hover:text-amber-400 py-2">Inicio</button>
             <button onClick={() => scrollIntoView('grado-cero-brand')} className="text-neutral-300 hover:text-amber-400 py-2">Grado Cero</button>
@@ -982,7 +986,7 @@ export default function InicioClient() {
             transition={{ duration: 0.5 }}
           >
             {/* HERO PRINCIPAL: ESCAPARATE PREMIUM (CAROUSEL AUTOMÁTICO DE ANCHO COMPLETO - EXCLUSIVAMENTE GRADO CERO) */}
-            <section className="relative w-full overflow-hidden bg-neutral-900 border-b border-white/5" id="carrusel-hero">
+            <section className="relative w-full overflow-hidden bg-zinc-900 border-b border-white/10" id="carrusel-hero">
               <div className="relative h-[450px] sm:h-[550px] md:h-[650px] flex items-center justify-center">
                 
                 {/* Animación del Fondo del Slide */}
@@ -991,13 +995,13 @@ export default function InicioClient() {
                     src={HERO_SLIDES[activeHeroSlide].imageUrl}
                     alt={HERO_SLIDES[activeHeroSlide].title}
                     fill
-                    className="object-cover opacity-30 scale-102 transition-transform duration-[6000ms]"
+                    className="object-cover opacity-40 scale-102 transition-transform duration-[6000ms]"
                     referrerPolicy="no-referrer"
                     priority
                   />
                   {/* Gradientes Oscuros de Exclusividad */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/50" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/60 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-zinc-950/40" />
                 </div>
 
                 {/* Contenido Visual y de Venta */}
@@ -1070,31 +1074,31 @@ export default function InicioClient() {
             </section>
 
             {/* SECCIÓN DE CONFIANZA EN CONVERSIONES (GLASSMORPHISM HORIZONTAL BARS) */}
-            <section className="py-8 bg-neutral-950 text-xs font-mono uppercase tracking-[0.1em]" id="trust-bar">
+            <section className="py-10 bg-zinc-900/25 text-xs font-mono uppercase tracking-[0.1em]" id="trust-bar">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 gap-y-4">
                   
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-800/50 border border-white/10 backdrop-blur-md shadow-lg">
                     <Truck size={18} className="text-amber-400 shrink-0" />
                     <span className="text-[10px] leading-tight text-neutral-400">Envíos Asegurados <br /><strong className="text-white">a todo México</strong></span>
                   </div>
 
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-800/50 border border-white/10 backdrop-blur-md shadow-lg">
                     <Shield size={18} className="text-amber-400 shrink-0" />
                     <span className="text-[10px] leading-tight text-neutral-400">Pagos Seguros <br /><strong className="text-white">Encriptación SSL</strong></span>
                   </div>
 
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-800/50 border border-white/10 backdrop-blur-md shadow-lg">
                     <Phone size={18} className="text-amber-400 shrink-0" />
                     <span className="text-[10px] leading-tight text-neutral-400">Atención Directa <br /><strong className="text-white">Personalizada 24/7</strong></span>
                   </div>
 
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-800/50 border border-white/10 backdrop-blur-md shadow-lg">
                     <Sparkles size={18} className="text-amber-400 shrink-0" />
                     <span className="text-[10px] leading-tight text-neutral-400">Selección Curada <br /><strong className="text-white">Productos Certificados</strong></span>
                   </div>
 
-                  <div className="col-span-2 md:col-span-4 lg:col-span-1 flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm justify-center lg:justify-start">
+                  <div className="col-span-2 md:col-span-4 lg:col-span-1 flex items-center gap-3 p-4 rounded-xl bg-zinc-800/50 border border-white/10 backdrop-blur-md shadow-lg justify-center lg:justify-start">
                     <Award size={18} className="text-amber-400 shrink-0" />
                     <span className="text-[10px] leading-tight text-neutral-400">Garantía Extrema <br /><strong className="text-white">de Satisfacción</strong></span>
                   </div>
@@ -1104,7 +1108,7 @@ export default function InicioClient() {
             </section>
 
             {/* SECCIÓN DESTACADA: COLECCIÓN OFICIAL GRADO CERO (NUESTRO VALOR DOMINANTE) */}
-            <section className="py-20 bg-neutral-950 relative" id="grado-cero-brand">
+            <section className="py-24 bg-zinc-950 relative" id="grado-cero-brand">
               
               {/* Esferas de luz sutil gótica para el efecto cristal */}
               <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-amber-500/5 rounded-full filter blur-[100px] pointer-events-none" />
@@ -1127,14 +1131,14 @@ export default function InicioClient() {
                   {officialProducts.map((p) => (
                     <div 
                       key={p.id}
-                      className="bg-neutral-900/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-amber-500/20 shadow-2xl transition-all duration-500 group flex flex-col sm:flex-row h-full relative"
+                      className="bg-zinc-800/40 backdrop-blur-md border border-white/8 rounded-2xl overflow-hidden hover:border-amber-500/30 shadow-2xl transition-all duration-500 group flex flex-col sm:flex-row h-full relative"
                     >
-                      <div className="sm:w-1/2 aspect-square sm:aspect-auto relative bg-neutral-950 p-6 flex items-center justify-center overflow-hidden">
+                      <div className="sm:w-1/2 aspect-square sm:aspect-auto relative bg-zinc-900 p-6 flex items-center justify-center overflow-hidden">
                         <Image 
                           src={p.imageUrl} 
                           alt={p.name} 
                           fill 
-                          className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-750" 
+                          className="object-cover opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-750" 
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute inset-0 bg-neutral-950/10 pointer-events-none" />
@@ -1190,7 +1194,7 @@ export default function InicioClient() {
             </section>
 
             {/* SECCIÓN CATÁLOG: INICIO DE FABRICANTES ALIADOS & BUSQUEDA INTEGRADORA */}
-            <section className="py-20 bg-neutral-950 border-t border-white/5 relative" id="allied-catalog">
+            <section className="py-24 bg-zinc-900/20 border-t border-white/10 relative" id="allied-catalog">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
                 
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
@@ -1205,7 +1209,7 @@ export default function InicioClient() {
                   </div>
 
                   {/* Accionador de Filtros Rápidos */}
-                  <div className="bg-neutral-900/40 border border-white/5 p-2 rounded-lg flex gap-2 text-[10px] font-mono">
+                  <div className="bg-zinc-800/50 border border-white/10 p-2 rounded-lg flex gap-2 text-[10px] font-mono">
                     <button 
                       onClick={() => setBrandFilter('all')} 
                       className={`px-3 py-1.5 rounded transition ${brandFilter === 'all' ? 'bg-amber-500 text-black font-extrabold' : 'text-neutral-400'}`}
@@ -1231,7 +1235,7 @@ export default function InicioClient() {
                 <div className="flex flex-col lg:flex-row gap-8">
                   
                   {/* Panel de Filtros a la Izquierda (Glassmorphism de Rigor) */}
-                  <aside className="w-full lg:w-64 space-y-6 shrink-0 bg-neutral-900/25 border border-white/5 rounded-xl p-5 backdrop-blur-sm self-start">
+                  <aside className="w-full lg:w-64 space-y-6 shrink-0 bg-zinc-800/35 border border-white/10 rounded-xl p-5 backdrop-blur-md self-start">
                     <div className="flex items-center gap-2 border-b border-white/5 pb-3">
                       <Filter size={14} className="text-amber-500" />
                       <h3 className="text-xs uppercase tracking-[0.2em] font-mono text-white font-bold">Filtro de Catálogo</h3>
@@ -1272,6 +1276,8 @@ export default function InicioClient() {
                         value={priceMax}
                         onChange={(e) => setPriceMax(parseInt(e.target.value))}
                         className="w-full accent-amber-500 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+                        title="Precio máximo"
+                        aria-label="Precio máximo"
                       />
                       <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
                         <span>$500 MXN</span>
@@ -1287,7 +1293,7 @@ export default function InicioClient() {
                         placeholder="ej: Absoluto, carbón..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-neutral-950 text-xs text-neutral-200 border border-white/5 p-2 rounded-md focus:outline-none focus:border-amber-500"
+                        className="w-full bg-zinc-900/80 text-xs text-zinc-200 border border-white/10 p-2 rounded-md focus:outline-none focus:border-amber-500"
                       />
                     </div>
 
@@ -1299,7 +1305,7 @@ export default function InicioClient() {
                         setBrandFilter('all');
                         setPriceMax(4000);
                       }}
-                      className="w-full py-2 bg-neutral-950 hover:bg-neutral-900 border border-white/5 hover:border-white/10 rounded text-[10px] uppercase font-mono tracking-wider font-semibold transition"
+                      className="w-full py-2 bg-zinc-900/60 hover:bg-zinc-800/80 border border-white/10 hover:border-white/20 rounded text-[10px] uppercase font-mono tracking-wider font-semibold transition"
                     >
                       Limpiar Filtros
                     </button>
@@ -1311,7 +1317,7 @@ export default function InicioClient() {
                       {filteredProducts.map((p) => (
                         <div 
                           key={p.id}
-                          className="bg-neutral-900/35 border border-white/5 hover:border-amber-500/20 hover:bg-neutral-900/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 group flex flex-col h-full relative"
+                          className="bg-zinc-800/35 border border-white/10 hover:border-amber-500/30 hover:bg-zinc-800/60 rounded-xl overflow-hidden shadow-xl transition-all duration-300 group flex flex-col h-full relative"
                         >
                           
                           {/* Badge Identificativo */}
@@ -1330,13 +1336,13 @@ export default function InicioClient() {
                           {/* Imagen con Reflejo */}
                           <div 
                             onClick={() => { setSelectedProduct(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                            className="aspect-square bg-neutral-950 p-6 flex items-center justify-center relative cursor-pointer overflow-hidden border-b border-white/5"
+                            className="aspect-square bg-zinc-950 p-6 flex items-center justify-center relative cursor-pointer overflow-hidden border-b border-white/10"
                           >
                             <Image 
                               src={p.imageUrl} 
                               alt={p.name} 
                               fill 
-                              className="object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
+                              className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
                               referrerPolicy="no-referrer"
                             />
                             <div className="absolute inset-0 bg-neutral-900/5 pointer-events-none" />
@@ -1365,7 +1371,7 @@ export default function InicioClient() {
 
                               <button 
                                 onClick={() => handleAddToCart(p, 1)}
-                                className="bg-neutral-950 hover:bg-white hover:text-black hover:border-white border border-white/10 transition-colors text-[9px] uppercase tracking-widest font-mono font-black py-2 px-3 rounded cursor-pointer"
+                                className="bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/25 hover:border-amber-500 transition-all text-[9px] uppercase tracking-widest font-mono font-black py-2 px-3 rounded cursor-pointer"
                               >
                                 Añadir
                               </button>
@@ -1426,7 +1432,7 @@ export default function InicioClient() {
             </div>
 
             {/* Contenedor Escombroso de la Ficha */}
-            <div className="bg-neutral-900/40 border border-white/5 backdrop-blur-md rounded-2xl p-6 md:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 shadow-2xl">
+            <div className="bg-zinc-800/40 border border-white/10 backdrop-blur-md rounded-2xl p-6 md:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 shadow-2xl">
               
               {/* Bloque Izquierdo: Galería de Fotos (Fusión Múltiples Ángulos) */}
               <div className="lg:col-span-6 space-y-4 flex flex-col md:flex-row gap-4">
@@ -1440,6 +1446,8 @@ export default function InicioClient() {
                       className={`w-14 h-14 rounded-lg bg-neutral-950 p-1 border relative overflow-hidden transition-all ${
                         activeImageIndex === i ? 'border-amber-500 ring-1 ring-amber-500/40' : 'border-white/5 hover:border-white/15'
                       }`}
+                      title={`Ver ángulo ${i + 1}`}
+                      aria-label={`Ver ángulo ${i + 1}`}
                     >
                       <Image 
                         src={img} 
@@ -1453,13 +1461,13 @@ export default function InicioClient() {
                 </div>
 
                 {/* Gran Imagen de Exposición */}
-                <div className="flex-1 aspect-[4/5] bg-neutral-950 border border-white/5 rounded-xl relative overflow-hidden flex items-center justify-center p-8 order-1 md:order-2">
+                <div className="flex-1 aspect-[4/5] bg-zinc-950 border border-white/10 rounded-xl relative overflow-hidden flex items-center justify-center p-8 order-1 md:order-2">
                   <Image 
                     src={selectedProduct.allImages[activeImageIndex]}
                     alt={selectedProduct.name}
                     fill
                     priority
-                    className="object-cover opacity-80 hover:scale-102 transition-transform duration-500"
+                    className="object-cover opacity-95 hover:scale-102 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-neutral-900/5 pointer-events-none" />
@@ -1500,7 +1508,7 @@ export default function InicioClient() {
                   </div>
 
                   {/* Precios sin rodeos */}
-                  <div className="bg-neutral-950 p-5 rounded-xl border border-white/5 space-y-1">
+                  <div className="bg-zinc-900/60 p-5 rounded-xl border border-white/10 space-y-1">
                     <p className="text-[10px] text-neutral-500 font-mono tracking-widest uppercase">Precio Oficial de Suministro</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-serif text-white font-light tracking-tight">
@@ -1564,15 +1572,15 @@ export default function InicioClient() {
             </div>
 
             {/* TABLA DE ESPECIFICACIONES TÉCNICAS */}
-            <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-6 md:p-8 space-y-6">
+            <div className="bg-zinc-800/40 border border-white/10 rounded-2xl p-6 md:p-8 space-y-6">
               <h3 className="text-lg font-serif text-white flex items-center gap-2">
                 <Info size={16} className="text-amber-500" /> Ficha Técnica y Composición Química
               </h3>
 
-              <div className="border border-white/5 rounded-xl overflow-hidden divide-y divide-white/5 font-light text-xs sm:text-sm">
+              <div className="border border-white/10 rounded-xl overflow-hidden divide-y divide-white/10 font-light text-xs sm:text-sm">
                 {Object.entries(selectedProduct.specs).map(([key, val]) => (
                   <div key={key} className="grid grid-cols-1 md:grid-cols-12">
-                    <div className="md:col-span-4 bg-neutral-950 p-4 font-mono text-[10px] uppercase text-neutral-400 font-bold tracking-wider">
+                    <div className="md:col-span-4 bg-zinc-900/80 p-4 font-mono text-[10px] uppercase text-neutral-400 font-bold tracking-wider">
                       {key}
                     </div>
                     <div className="md:col-span-8 p-4 text-neutral-200">
@@ -1631,10 +1639,10 @@ export default function InicioClient() {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'tween', duration: 0.3 }}
-                className="w-screen max-w-md bg-neutral-950 border-l border-white/5 text-neutral-200 flex flex-col h-full shadow-2xl relative"
+                className="w-screen max-w-md bg-zinc-950 border-l border-white/10 text-neutral-200 flex flex-col h-full shadow-2xl relative"
               >
                 {/* Cabecera */}
-                <div className="p-6 border-b border-white/5 bg-neutral-900/30 flex justify-between items-center bg-neutral-950">
+                <div className="p-6 border-b border-white/10 bg-neutral-900/30 flex justify-between items-center bg-zinc-950">
                   <div>
                     <h3 className="font-serif text-white text-lg">Tu Selección Premium</h3>
                     <p className="text-[9px] text-neutral-500 font-mono uppercase tracking-[0.2em]">Estimado en tiempo real</p>
@@ -1642,6 +1650,8 @@ export default function InicioClient() {
                   <button 
                     onClick={() => setIsCartOpen(false)}
                     className="p-1 rounded-lg hover:bg-neutral-900 text-neutral-400 hover:text-white transition cursor-pointer"
+                    title="Cerrar carrito"
+                    aria-label="Cerrar carrito"
                   >
                     <X size={18} />
                   </button>
@@ -1651,12 +1661,14 @@ export default function InicioClient() {
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {cart.length > 0 ? (
                     cart.map((item) => (
-                      <div key={item.product.id} className="bg-neutral-900/50 border border-white/5 p-4 rounded-xl space-y-3 relative">
+                      <div key={item.product.id} className="bg-zinc-800/50 border border-white/10 p-4 rounded-xl space-y-3 relative">
                         
                         {/* Eliminar de Selección */}
                         <button 
                           onClick={() => handleRemoveFromCart(item.product.id)}
                           className="absolute top-4 right-4 text-neutral-550 hover:text-red-400 transition cursor-pointer"
+                          title="Eliminar producto"
+                          aria-label="Eliminar producto"
                         >
                           <Trash2Icon />
                         </button>
@@ -1674,7 +1686,7 @@ export default function InicioClient() {
 
                         <div className="flex items-center justify-between border-t border-white/5 pt-3">
                           {/* Modificador de Cantidad */}
-                          <div className="flex items-center gap-2 bg-neutral-950 border border-white/5 rounded p-0.5">
+                          <div className="flex items-center gap-2 bg-zinc-900 border border-white/10 rounded p-0.5">
                             <button 
                               onClick={() => handleUpdateQuantity(item.product.id, item.quantity - 1)}
                               className="px-2 py-0.5 hover:bg-neutral-900 text-neutral-400 font-bold text-xs transition"
@@ -1786,7 +1798,7 @@ export default function InicioClient() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-sm bg-neutral-900 border border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8 space-y-6 z-10"
+              className="relative w-full max-w-sm bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8 space-y-6 z-10"
             >
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-amber-700 text-neutral-950 flex items-center justify-center font-serif text-lg font-bold rounded-xl mx-auto shadow">
@@ -1810,7 +1822,7 @@ export default function InicioClient() {
                       placeholder="ej: Constanza Medina"
                       value={authName}
                       onChange={(e) => setAuthName(e.target.value)}
-                      className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                      className="w-full bg-zinc-950/80 border border-white/10 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
                     />
                   </div>
                 )}
@@ -1823,7 +1835,7 @@ export default function InicioClient() {
                     placeholder="ej: cliente@maison.com"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                    className="w-full bg-zinc-950/80 border border-white/10 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
                   />
                 </div>
 
@@ -1835,7 +1847,7 @@ export default function InicioClient() {
                     placeholder="••••••••"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                    className="w-full bg-zinc-950/80 border border-white/10 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
                   />
                 </div>
 
@@ -1879,7 +1891,7 @@ export default function InicioClient() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-md bg-neutral-900 border border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8 space-y-6 z-10"
+              className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8 space-y-6 z-10"
             >
               {/* Header */}
               <div className="text-center space-y-2">
@@ -1927,7 +1939,7 @@ export default function InicioClient() {
                       placeholder="ejemplo@bodega.com"
                       value={wholesaleEmail}
                       onChange={(e) => setWholesaleEmail(e.target.value)}
-                      className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                      className="w-full bg-zinc-950/80 border border-white/10 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
                     />
                   </div>
 
@@ -1944,6 +1956,8 @@ export default function InicioClient() {
                       value={wholesaleUnits}
                       onChange={(e) => setWholesaleUnits(parseInt(e.target.value))}
                       className="w-full accent-amber-500 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+                      title="Cantidad estimada de unidades"
+                      aria-label="Cantidad estimada de unidades"
                     />
                   </div>
 
