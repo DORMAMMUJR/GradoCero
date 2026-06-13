@@ -4,54 +4,54 @@ import React, { useState, useEffect } from 'react';
 import {
   Search,
   ShoppingCart,
-  Menu,
-  ChevronRight,
-  Droplet,
-  Shield,
-  Wind,
-  Wrench,
-  Trash2,
-  Brush,
-  Zap,
-  ArrowLeft,
+  User,
   Check,
-  Star,
-  Users,
-  Building2,
-  Phone,
-  Mail,
-  Lock,
-  Loader2,
   X,
-  FileText,
-  Clock,
-  LogOut,
-  ChevronDown,
+  ArrowRight,
+  ArrowLeft,
+  Phone,
+  Shield,
+  Award,
+  Truck,
+  Sparkles,
+  Filter,
   Info,
-  Bot,
-  Send,
-  MessageSquare,
-  Sparkles
+  ChevronRight,
+  ChevronDown,
+  Star,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Clock,
+  Lock,
+  Plus,
+  Minus,
+  Loader2,
+  Menu
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Footer } from '@/components/layout/Footer';
 
-// === DEFINICIONES DE TIPOS ===
+// === ESTRUCTURAS DE DATOS ===
 interface Product {
   id: string;
   sku: string;
   name: string;
-  description: string;
   category: string;
-  purchaseCost: number;
-  finalSalePrice: number;
-  imageUrl: string;
-  stock: number;
+  brand: string;
+  isOfficial: boolean; // true = Grado Cero, false = Fabricante Aliado
+  price: number;
   rating: number;
-  sales: number;
+  reviews: number;
+  imageUrl: string;
+  allImages: string[];
+  shortDesc: string;
+  longDesc: string;
+  availability: string;
   specs: Record<string, string>;
+  isHero?: boolean;
 }
 
 interface CartItem {
@@ -59,1897 +59,1563 @@ interface CartItem {
   quantity: number;
 }
 
-interface QuoteItem {
-  id: string;
-  quoteNumber: string;
-  clientName: string;
-  companyName: string;
-  agentName: string;
-  itemCount: number;
-  totalAmount: number;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED';
-  date: string;
-  notes?: string;
-  items: { productName: string; quantity: number; unitPrice: number }[];
-}
-
-interface UserSession {
-  email: string;
-  name: string;
-  companyName: string;
-  phone: string;
-  loginMethod: 'google' | 'phone' | 'email';
-}
-
-// === DATOS DE MAQUETA ENRIQUECIDOS ===
-const initialProductsList: Product[] = [
+// === CONSTANTES DE MAQUETA EN ESPAÑOL ===
+const PRODUCTS_DATA: Product[] = [
   {
-    id: 'p1',
-    sku: 'GC-QI-001',
-    name: 'Desengrasante Industrial Alto Rendimiento 20L',
-    category: 'Químicos Industriales',
-    description: 'Desengrasante concentrado base agua de alto desempeño diseñado para remover aceites pesados, grasas carbonizadas e hidrocarburos en maquinaria pesada y pisos industriales. Biodegradable y libre de solventes clorados.',
-    purchaseCost: 96.53,
-    finalSalePrice: 125.50,
-    imageUrl: 'https://picsum.photos/seed/desengrasante/600/600',
-    stock: 450,
-    rating: 4.9,
-    sales: 124,
+    id: 'gc-01',
+    sku: 'QUI-001',
+    name: 'Cloruro de Benzalconio Orgánico Cero',
+    category: 'Desinfección de Alta Gama',
+    brand: 'Grado Cero',
+    isOfficial: true,
+    price: 1100,
+    rating: 4.95,
+    reviews: 240,
+    imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Desinfectante Alimenticio ultra-concentrado en Cloruro de Benzalconio de Alta Pureza. Presentación en Bidón de 20 Litros.',
+    longDesc: 'Nuestra fórmula estrella Grado Cero para la industria alimentaria y hotelera. Desinfectante biodegradable con estabilidad termo-molecular prolongada, diseñado para erradicar patógenos en segundos. Su base activa purificada de Cloruro de Benzalconio de primera generación actúa rompiendo instantáneamente membranas lípidas, garantizando inocuidad quirúrgica sin dejar fragancias residuales molestas ni manchas químicas.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Presentación': 'Galón Reforzado de 20 Litros',
-      'Biodegradable': 'Sí (Fórmula ecológica)',
-      'Valor de pH': '12.5 (Alcalino fuerte)',
-      'Dilución Recomendada': '1:10 hasta 1:50 según nivel de grasa',
-      'Certificación': 'ISO 9001, FDA indirect food contact'
+      'Presentación': 'Bidón de 20 Litros',
+      'Componente Activo': 'Cloruro de Benzalconio de Pureza Certificada',
+      'Rendimiento sugerido': 'Dilución de hasta 1:100 en agua purificada',
+      'Certificados': 'Grado Alimenticio, Registro Cofepris y FDA',
+      'Origen': 'Producido bajo estándares Grado Cero'
     }
   },
   {
-    id: 'p2',
-    sku: 'GC-PC-023',
-    name: 'Papel Higiénico Jumbo Roll 500m (Caja 6 uni)',
-    category: 'Papel & Celulosa',
-    description: 'Papel de alta resistencia y suavidad óptimo para dispensers de tráfico pesado. Doble hoja con precorte texturizado para un consumo eficiente. Ideal para oficinas, estadios e industrias.',
-    purchaseCost: 35.30,
-    finalSalePrice: 45.90,
-    imageUrl: 'https://picsum.photos/seed/papeljumbo/600/600',
-    stock: 1200,
+    id: 'gc-02',
+    sku: 'QUI-003',
+    name: 'Detergente Industrial Multiespectro',
+    category: 'Detergentes y Químicos',
+    brand: 'Grado Cero',
+    isOfficial: true,
+    price: 550,
+    rating: 4.88,
+    reviews: 185,
+    imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Fórmula tensioactiva biodegradable super desengrasante y catalizadora de suciedad. Presentación en Bidón de 20 Litros.',
+    longDesc: 'Detercon original formulado bajo el estricto rigor de Grado Cero. Penetra profundamente en las superficies más complejas, desprendiendo aceites hidrofóbicos, grasas minerales y hollín de manera inmediata. Su pH equilibrado reduce drásticamente el desgaste de materiales metálicos o polímeros de instrumentación industrial.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Presentación': 'Bidón de 20 Litros (Envase de alta densidad a cambio)',
+      'Tipo de Fórmula': 'Tensioactivos no iónicos biodegradables',
+      'Efectividad': 'Uso en aceros refractarios, vidrios y cerámicas de tránsito extremo',
+      'Dosificación': '20ml por litro para limpieza estándar corporativa'
+    }
+  },
+  {
+    id: 'gc-03',
+    sku: 'QUI-004',
+    name: 'Desengrasante Alcalino de Grado Cero',
+    category: 'Detergentes y Químicos',
+    brand: 'Grado Cero',
+    isOfficial: true,
+    price: 990,
+    rating: 4.97,
+    reviews: 312,
+    imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Concentrado superalcalino biodegradable para remoción extrema de aceites carbonizados. Presentación en Concentrado Alcalino de 20 Litros.',
+    longDesc: 'Grado Cero presenta su fórmula desengrasante termoactiva definitiva. Diseñado quirúrgicamente para la licuación directa de grasas pesadas, ceras endurecidas e incrustaciones de carbón en cocinas comerciales y naves de producción. Su alta concentración permite su dilución masiva sin mermar la capacidad de disolución lípida.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Presentación': 'Bidón de 20 Litros Concentrado',
+      'Grado de alcalinidad': 'Superalcalino optimizado',
+      'Seguridad': 'Uso exclusivo con equipo de protección personal (EPP)',
+      'Dilución': 'Hasta 1:5 para grasas extremadamente carbonizadas'
+    }
+  },
+  {
+    id: 'gc-04',
+    sku: 'BAN-002',
+    name: 'Bruma Ambiental Terpenos Cero',
+    category: 'Baños e Higiene',
+    brand: 'Grado Cero',
+    isOfficial: true,
+    price: 450,
+    rating: 4.89,
+    reviews: 122,
+    imageUrl: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Aromatizante molecular concentrado de larga duración. Notas de eucalipto glacial y maderas finas. Presentación en Bidón de 20 Litros.',
+    longDesc: 'Una obra maestra para transformar aromáticamente el ambiente en oficinas corporativas y salas ejecutivas de Grado Cero. Equipada con agentes de fijación molecular que neutralizan olores orgánicos indeseados en lugar de enmascararlos, brindando una atmósfera impecable de pureza y distinción higiénica.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Presentación': 'Bidón de 20 Litros',
+      'Fragancias Disponibles': 'Eucalipto, Lavanda Glacial, Cítricos de Invierno',
+      'Duración Residual': 'Hasta 48 horas continuas en superficies'
+    }
+  },
+  {
+    id: 'gc-05',
+    sku: 'BAN-004',
+    name: 'Gel Antibacterial Molecular 70%',
+    category: 'Baños e Higiene',
+    brand: 'Grado Cero',
+    isOfficial: true,
+    price: 800,
+    rating: 4.91,
+    reviews: 158,
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Sanitizante cristalino enriquecido con dermoprotectores humectantes y glicerina vegetal. Presentación en Porrón de 20 Litros.',
+    longDesc: 'Seguridad absoluta sin descuidar la salud dérmica. Este gel de grado farmacopea contiene un 70% de Alcohol Etílico purificado, eliminando al instante bacterias y hongos sin dejar residuos pegajosos. Enriquecido con humectantes selectos para un tacto suave y de absorción premium.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Presentación': 'Porrón de 20 Litros',
+      'Concentración de Alcohol': '70% Etanol de Alta Pureza de grado USP',
+      'Textura': 'Gel fluido libre de aromas residuales'
+    }
+  },
+  // --- FABRICANTES ALIADOS ---
+  {
+    id: 'aliado-01',
+    sku: 'PAP-001',
+    name: 'Papel Higiénico Industrial Elite',
+    category: 'Papel e Higiene',
+    brand: 'Nacional de Aseo',
+    isOfficial: false,
+    price: 450,
+    rating: 4.65,
+    reviews: 98,
+    imageUrl: 'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Caja con 6 rollos gigantes de 500 metros cada uno de hoja doble. Absorción elástica superior.',
+    longDesc: 'Abastecimiento de gran escala provisto por Nacional de Aseo. Fibra biodegradable doble hoja con una textura que equilibra una resistencia elástica insuperable en seco con una disolución rápida al contacto con flujos de agua sanitarios, evitando acumulaciones.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Nacional de Aseo (Socio Aliado)',
+      'Formato': 'Caja con 6 rollos',
+      'Metraje por rollo': '500 metros lineales',
+      'Tipo': 'Hoja doble ultra-suave'
+    }
+  },
+  {
+    id: 'aliado-02',
+    sku: 'PAP-002',
+    name: 'Toallas de Papel Interdobladas Multifold',
+    category: 'Papel e Higiene',
+    brand: 'Rigasa / Nacional de Aseo',
+    isOfficial: false,
+    price: 320,
     rating: 4.7,
-    sales: 580,
+    reviews: 120,
+    imageUrl: 'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Caja premium de Toallas Sanitas, conteniendo 2000 piezas individuales para dispensación de higiene.',
+    longDesc: 'Dobladas con precisión milimétrica para un secado de manos pulcro sin dobleces cruzados. Disminuyen el costo operativo gracias a su extraordinaria absorción capilar, de modo que una sola hoja es suficiente para eliminar la humedad total de la piel.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Longitud Total': '500 metros por rollo',
-      'Cantidad': 'Caja con 6 rollos jumbo',
-      'Número de Hojas': 'Doble hoja absorbente',
-      'Ancho': '9 cm',
-      'Textura': 'Gofrado suave'
+      'Marca': 'Rigasa / Nacional de Aseo (Socio Aliado)',
+      'Cantidad': '2000 piezas por caja',
+      'Compatibilidad': 'Universal con la mayoría de dispensadores de toallas interdobladas'
     }
   },
   {
-    id: 'p3',
-    sku: 'GC-EP-011',
-    name: 'Mascarilla Respirador Medio Rostro 3M 6200',
-    category: 'Equipos de Protección (EPP)',
-    description: 'Respirador reutilizable de medio rostro que ofrece protección versátil contra gases, vapores y partículas. El diseño de perfil bajo ofrece mejor visibilidad e integración con gafas de seguridad.',
-    purchaseCost: 24.76,
-    finalSalePrice: 32.20,
-    imageUrl: 'https://picsum.photos/seed/mascarilla/600/600',
-    stock: 120,
+    id: 'aliado-03',
+    sku: 'PAP-003',
+    name: 'Papel Absorbente Industrial Pesado',
+    category: 'Papel e Higiene',
+    brand: 'Genéricos de Limpieza',
+    isOfficial: false,
+    price: 580,
+    rating: 4.78,
+    reviews: 64,
+    imageUrl: 'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Bobina azul de limpieza ultra pesada de 300 metros de longitud. Tejido reforzado.',
+    longDesc: 'Bobina para arrastre de aceites e hidrocarburos pesados en laboratorios o manufactura. Su exclusiva textura rugosa posee micro-cavidades que encapsulan sedimentos sin desmoronarse o soltar pelusas de algodón.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Genéricos de Limpieza (Socio Aliado)',
+      'Longitud': '300 metros continuos',
+      'Espesor': 'Reforzado de triple capa'
+    }
+  },
+  {
+    id: 'aliado-04',
+    sku: 'PAP-004',
+    name: 'Dispensador Papel Jumbo Oval Humo',
+    category: 'Papel e Higiene',
+    brand: 'Bodega de Papel',
+    isOfficial: false,
+    price: 550,
+    rating: 4.58,
+    reviews: 43,
+    imageUrl: 'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Gabinete de dosificación Jumbo de alta resistencia acrílica color humo translúcido.',
+    longDesc: 'Construido en resina de policarbonato industrial capaz de soportar vandalismo e impactos severos en áreas de uso masivo. Su elegante domo color negro humo permite monitorizar el nivel de consumo de papel de un simple vistazo.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Bodega de Papel (Socio Aliado)',
+      'Capacidad': 'Para rollos de hasta 500m de diámetro estándar',
+      'Accesorios': 'Incluye llave de seguridad antirobo y herrajes de instalación'
+    }
+  },
+  {
+    id: 'aliado-05',
+    sku: 'PRO-001',
+    name: 'Guantes de Nitrilo Industrial (Caja 100)',
+    category: 'Protección Personal',
+    brand: 'Ambiderm / TatooMex',
+    isOfficial: false,
+    price: 350,
+    rating: 4.88,
+    reviews: 145,
+    imageUrl: 'https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Caja con 100 guantes de nitrilo premium libre de polvo, disponibles en Negro o Azul de alta resistencia.',
+    longDesc: 'Tolerancia térmica y durabilidad incrementada desarrollados por Ambiderm. Exentos de aceleradores de azufre o látex natural, eliminando alergias. Su acabado texturizado en yemas maximiza la motricidad con aceites.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Ambiderm / TatooMex (Socio Aliado)',
+      'Presentación': 'Caja dispensadora de 100 piezas',
+      'Acabado': 'Libre de polvo lubricante / Texturizado'
+    }
+  },
+  {
+    id: 'aliado-06',
+    sku: 'PRO-002',
+    name: 'Guantes de Látex Texturizados (Caja 100)',
+    category: 'Protección Personal',
+    brand: 'Ambiderm',
+    isOfficial: false,
+    price: 380,
+    rating: 4.67,
+    reviews: 74,
+    imageUrl: 'https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Caja con 100 guantes de látex natural de gran estepicidad, libres de polvo lubricante químico.',
+    longDesc: 'Guantes de tactilidad hipersensible marca Ambiderm. Hechos de látex orgánico purificado de alto gramaje para proveer una flexibilidad sublime durante limpiezas prolongadas o manipulaciones de precisión química.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Ambiderm (Socio Aliado)',
+      'Cantidad': '100 piezas por caja',
+      'Espesor nominal': '0.12 mm'
+    }
+  },
+  {
+    id: 'aliado-07',
+    sku: 'QUI-002',
+    name: 'Desinfectante Industrial Amonio Cuaternario',
+    category: 'Detergentes y Químicos',
+    brand: 'Químicos y Esencias',
+    isOfficial: false,
+    price: 850,
     rating: 4.8,
-    sales: 310,
+    reviews: 130,
+    imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Amonio cuaternario de quinta generación concentrado. Presentación de Bidón de 20 Litros.',
+    longDesc: 'Potente desinfectante multiespectro formulado por Químicos y Esencias. Actúa aniquilando hongos, esporas y bacterias resistentes en suelos y paramentos de tránsito rústico, dejando una película microscópica desinfectante activa de largo espectro.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Marca': '3M original',
-      'Modelo': '6200 (Talla M)',
-      'Material': 'Termoplástico elastómero sintético',
-      'Tipo de Conexión': 'Bayoneta (Cartucho doble)',
-      'Aprobación': 'NIOSH / OSHA'
+      'Marca': 'Químicos y Esencias (Socio Aliado)',
+      'Base Química': 'Sales de Amonio Cuaternario de Quinta Generación',
+      'Volumen': 'Bidón de 20 Litros'
     }
   },
   {
-    id: 'p4',
-    sku: 'GC-IM-045',
-    name: 'Escoba Barredora Industrial Filamentos Duros',
-    category: 'Implementos Manuales',
-    description: 'Escoba de alta densidad con cerdas rígidas aptas para concreto, asfalto y superficies rugosas. Excelente vida útil e inalterable ante ambientes ácidos o alcalinos.',
-    purchaseCost: 13.84,
-    finalSalePrice: 18.00,
-    imageUrl: 'https://picsum.photos/seed/escoba/600/600',
-    stock: 35,
-    rating: 4.5,
-    sales: 92,
+    id: 'aliado-08',
+    sku: 'QUI-005',
+    name: 'Cloro Industrial Concentrado 6%',
+    category: 'Detergentes y Químicos',
+    brand: 'Química Danylus',
+    isOfficial: false,
+    price: 300,
+    rating: 4.72,
+    reviews: 110,
+    imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Hipoclorito de sodio al 6% activo puro en agua desionizada. Bidón de 20 Litros de alta densidad.',
+    longDesc: 'Agente blanqueador alcalino de alta reactividad purificado por Química Danylus. Ideal para protocolos severos de blanqueamiento textil, eliminación de bacterias anaerobias y saneamiento de fosas o cisternas industriales.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Cerdas': 'Polipropileno de alto impacto 4"',
-      'Ancho de Bloque': '60 cm',
-      'Mango Incluido': 'Madera premium roscable de 1.50m',
-      'Resistencia Térmica': 'Hasta 90°C'
+      'Marca': 'Química Danylus (Socio Aliado)',
+      'Volumen': '20 Litros en bidón compatible a cambio',
+      'Concentración': '6% Activo Garantizado'
     }
   },
   {
-    id: 'p5',
-    sku: 'GC-QI-002',
-    name: 'Cloro Concentrado 5% Galón 4L',
-    category: 'Químicos Industriales',
-    description: 'Desinfectante e higienizante clorado Premium para la sanitización profunda de superficies operativas, baños e instalaciones sanitarias de alto contacto. Elimina el 99.9% de gérmenes comunes.',
-    purchaseCost: 8.50,
-    finalSalePrice: 11.05,
-    imageUrl: 'https://picsum.photos/seed/clorConcentrado/600/600',
-    stock: 800,
-    rating: 4.6,
-    sales: 420,
+    id: 'aliado-09',
+    sku: 'QUI-006',
+    name: 'Limpiavidrios Concentrado de Alto Brillo',
+    category: 'Detergentes y Químicos',
+    brand: 'Genéricos de Limpieza',
+    isOfficial: false,
+    price: 420,
+    rating: 4.69,
+    reviews: 58,
+    imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Fórmula alcoholizada libre de marcas. Elimina grasas dactilares y estáticas. Bidón de 20 Litros.',
+    longDesc: 'Composición evaporable instantánea provista por Genéricos de Limpieza. Diseñada para paneles vidriados templados extensos, fachadas de espejos y vitrinas corporativas. Su fórmula antiempañamiento repele el polvo por más tiempo gracias a su tecnología antiestática.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Concentración': 'Hipoclorito de sodio al 5%',
-      'Presentación': 'Galón 4 Litros',
-      'Caducidad': '12 meses bajo almacenamiento fresco',
-      'Acción bactericida': 'Verificación microbiológica de rango completo'
+      'Marca': 'Genéricos de Limpieza (Socio Aliado)',
+      'Base': 'Isopropanol purificado e inhibidores salinos',
+      'Presentación': 'Bidón de 20 Litros'
     }
   },
   {
-    id: 'p6',
-    sku: 'GC-EP-012',
-    name: 'Guantes de Nitrilo de Alta Resistencia (Caja 100u)',
-    category: 'Equipos de Protección (EPP)',
-    description: 'Guantes descartables de nitrilo de grado químico. Libres de látex y polvo, texturizados en la punta de los dedos para un agarre excepcional en condiciones húmedas u aceitosas.',
-    purchaseCost: 14.23,
-    finalSalePrice: 18.50,
-    imageUrl: 'https://picsum.photos/seed/nitriloguantes/600/600',
-    stock: 340,
-    rating: 4.8,
-    sales: 650,
+    id: 'aliado-10',
+    sku: 'QUI-007',
+    name: 'Sanitizante Orgánico de Frutas y Verduras',
+    category: 'Detergentes y Químicos',
+    brand: 'Químicos y Esencias',
+    isOfficial: false,
+    price: 350,
+    rating: 4.88,
+    reviews: 90,
+    imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Fórmula ecológica de grado alimenticio para esterilización biológica de legumbres. Bidón de 5 Litros.',
+    longDesc: 'Sanitizante botánico orgánico provisto por Químicos y Esencias. No altera las propiedades de sabor, frescura o aroma original de los alimentos cosechados, eliminando amebas, virus y microorganismos en un baño de inmersión rápido de 5 minutos.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Material': 'Nitrilo sintético 100%',
-      'Color': 'Negro industrial',
-      'Espesor de pared': '6 milésimas (ultra reforzado)',
-      'Tallas': 'M / L / XL',
-      'Presentación': 'Caja dispensadora de 100 unidades'
+      'Marca': 'Químicos y Esencias (Socio Aliado)',
+      'Volumen': 'Envase de 5 Litros',
+      'Biodegradabilidad': '100% libre de cloro residual'
     }
   },
   {
-    id: 'p7',
-    sku: 'GC-PC-024',
-    name: 'Toalla de Papel Interdoblada (Caja 2000 hojas)',
-    category: 'Papel & Celulosa',
-    description: 'Hojas de toalla intercaladas biodegradables ultra absorbentes de alta resistencia química. La caja contiene empaques higiénicos sellados listos para dispensadores estándar.',
-    purchaseCost: 23.00,
-    finalSalePrice: 29.90,
-    imageUrl: 'https://picsum.photos/seed/toalladoblada/600/600',
-    stock: 410,
-    rating: 4.4,
-    sales: 240,
+    id: 'aliado-11',
+    sku: 'QUI-008',
+    name: 'Shampoo Especial para Alfombras Pesadas',
+    category: 'Detergentes y Químicos',
+    brand: 'Marketb2b',
+    isOfficial: false,
+    price: 850,
+    rating: 4.76,
+    reviews: 62,
+    imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Diseñado para máquinas de inyección-succión industriales. Baja espuma y limpieza profunda. Bidón de 20 Litros.',
+    longDesc: 'Champú para tapices densos y moquetas ejecutivas provisto por Marketb2b. Sus abrillantadores ópticos recuperan la viveza original de la fibra del hilo, mientras neutralizan ácaros y esporas fúngicas con un agradable perfume de frescura higiénica.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Empaque': 'Caja con 2,000 toallas (10 fajillas de 200u)',
-      'Medidas de servicio': '21 x 24 cm',
-      'Material': 'Celulosa reciclada premium',
-      'Compatibilidad': 'Dispensadores de toallas en Z'
+      'Marca': 'Marketb2b (Socio Aliado)',
+      'Volumen': 'Bidón de 20 Litros',
+      'Compatibilidad': 'Apto para marcas líderes de inyección y extracción de lavado'
     }
   },
   {
-    id: 'p8',
-    sku: 'GC-ML-099',
-    name: 'Aspiradora Industrial Polvo y Agua 30L',
-    category: 'Maquinaria de Limpieza',
-    description: 'Equipo profesional de alta succión con motor bypass de doble etapa. Tanque de acero inoxidable resistente ante químicos corrosivos cotidianos. Ruedas pivotantes multidireccionales.',
-    purchaseCost: 145.38,
-    finalSalePrice: 189.00,
-    imageUrl: 'https://picsum.photos/seed/aspiradora/600/600',
-    stock: 45,
-    rating: 4.9,
-    sales: 38,
+    id: 'aliado-12',
+    sku: 'BAN-001',
+    name: 'Pastillas Desodorantes para Inodoro (Caja 50)',
+    category: 'Baños e Higiene',
+    brand: 'Genéricos de Limpieza',
+    isOfficial: false,
+    price: 350,
+    rating: 4.54,
+    reviews: 132,
+    imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Caja con 50 pastillas concentradas para inodoros o mingitorios. Gran control de sarro aromático.',
+    longDesc: 'Bloques de desodorización pesada de evaporación modulada. Liberan un agente quelante que ralentiza la solidificación de sales de calcio (sarro) en tuberías sanitarias, despidiendo una fragancia vigorizante en cada descarga.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Capacidad del Tanque': '30 Litros',
-      'Material Cuerpo': 'Acero Inoxidable Cr-Ni',
-      'Potencia': '1400 Watts / 1.8 HP',
-      'Flujo de Aire': '53 lts / segundo',
-      'Voltajes': '220V standard industrial'
+      'Marca': 'Genéricos de Limpieza (Socio Aliado)',
+      'Cantidad': '50 unidades sanitarias individuales',
+      'Fragancia': 'Cherry-Mentol de choque ambiental'
     }
   },
   {
-    id: 'p9',
-    sku: 'GC-GR-102',
-    name: 'Contenedor Móvil de Basura de 120L con Ruedas',
-    category: 'Gestión de Residuos',
-    description: 'Bote de basura móvil inyectado en HDPE de alta densidad con aditivo filtro UV para uso exterior rudo. Eje de acero sólido y llantas de hule macizo antiponchaduras.',
-    purchaseCost: 37.69,
-    finalSalePrice: 49.00,
-    imageUrl: 'https://picsum.photos/seed/contenedor/600/600',
-    stock: 180,
-    rating: 4.7,
-    sales: 112,
+    id: 'aliado-13',
+    sku: 'BAN-003',
+    name: 'Jabón para Manos Premium Perlescente',
+    category: 'Baños e Higiene',
+    brand: 'Marketb2b',
+    isOfficial: false,
+    price: 650,
+    rating: 4.84,
+    reviews: 104,
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Jabón líquido cremoso perlescente con emolientes de coco. Bidón de 20 Litros.',
+    longDesc: 'Fórmula cosmética corporativa desarrollada por Marketb2b. Aporta un lavado aromático sumamente suntuoso, removiendo bacterias al instante sin maltratar la barrera lipídica epidérmica debido a su pH neutro hipoalergénico.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Capacidad Volumétrica': '120 Litros',
-      'Carga Máxima': '60 kg',
-      'Material': 'Polietileno de Alta Densidad (HDPE)',
-      'Diámetro Llantas': '20 cm macizas',
-      'Colores Homologados': 'Verde (Orgánico), Gris (Inorgánico), Azul (Papel)'
+      'Marca': 'Marketb2b (Socio Aliado)',
+      'Volumen': 'Bidón de 20 Litros',
+      'Estética': 'Color blanco perla con brillo de seda'
     }
   },
   {
-    id: 'p10',
-    sku: 'GC-AO-005',
-    name: 'Dispensador de Jabón en Espuma para Pared',
-    category: 'Accesorios y Otros',
-    description: 'Dispensador manual de alta durabilidad con depósito rellenable. Válvula dosificadora de precisión que evita derrames o goteos indeseados. Incluye kit completo de empotramiento.',
-    purchaseCost: 18.46,
-    finalSalePrice: 24.00,
-    imageUrl: 'https://picsum.photos/seed/dispensador/600/600',
-    stock: 150,
-    rating: 4.3,
-    sales: 85,
+    id: 'aliado-14',
+    sku: 'JAR-001',
+    name: 'Bolsas de Basura Industriales Calibre Grueso',
+    category: 'Instrumentación y Accesorios',
+    brand: 'Rigasa Limpieza',
+    isOfficial: false,
+    price: 420,
+    rating: 4.82,
+    reviews: 142,
+    imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Rollo con 100 piezas negras tamaño institucional de calibre extra grueso. Anti-escurrimientos.',
+    longDesc: 'Láminas de polietileno re-procesado de alta densidad desarrolladas por Rigasa. Su calibre elevado resiste la perforación por astillas, cartones húmedos o desechos punzantes comunes en comedores u oficinas.',
+    availability: 'Disponible para envío inmediato',
     specs: {
-      'Funcionamiento': 'Pulsador ergonómico manual',
-      'Capacidad Recarga': '1000 mL',
-      'Material Carcasa': 'Plástico ABS anti-vandalismo',
-      'Instalación': 'Atornillado a pared o cinta doble cara industrial'
+      'Marca': 'Rigasa Limpieza (Socio Aliado)',
+      'Medición': '90cm x 120cm institucional',
+      'Espesor o calibre': 'Super grueso calibre 300'
+    }
+  },
+  {
+    id: 'aliado-15',
+    sku: 'JAR-002',
+    name: 'Cepillo Industrial Cerdas Duras',
+    category: 'Instrumentación y Accesorios',
+    brand: 'Genéricos de Limpieza',
+    isOfficial: false,
+    price: 160,
+    rating: 4.62,
+    reviews: 34,
+    imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Cepillo de restregado con block de madera y cerdas de polipropileno indeformables de alta dureza.',
+    longDesc: 'Diseñado por Genéricos de Limpieza para la remoción mecánica de lama, lodo estancado y sarro folicular en pisos epóxicos, vialidades o andenes de carga pesados.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Genéricos de Limpieza (Socio Aliado)',
+      'Cerdas': 'Fibras de polipropileno de alta densidad recuperativa',
+      'Bastidor': 'Madera de pino estufada con rosca universal'
+    }
+  },
+  {
+    id: 'aliado-16',
+    sku: 'JAR-003',
+    name: 'Jalador de Piso Metálico Premium 60cm',
+    category: 'Instrumentación y Accesorios',
+    brand: 'Rigasa Limpieza',
+    isOfficial: false,
+    price: 210,
+    rating: 4.85,
+    reviews: 69,
+    imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Jalador metálico de 60cm de ancho con doble goma de neopreno. Arrastre de agua perfecto.',
+    longDesc: 'Instrumento fabricado por Rigasa. Su doble labio de neopreno esponjado se amolda excelentemente a las crestas de azulejos o relieves de piedra, arrastrando líquidos grasos o aguas pluviales sin agrietarse ante insolaciones continuas.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Rigasa Limpieza (Socio Aliado)',
+      'Ancho operativo': '60 centímetros lineales',
+      'Material': 'Chasis de lámina electro-soldada con pintura anticorrosiva'
+    }
+  },
+  {
+    id: 'aliado-17',
+    sku: 'JAR-004',
+    name: 'Trapeador Industrial Pabilo Algodón 500g',
+    category: 'Instrumentación y Accesorios',
+    brand: 'Genéricos de Limpieza',
+    isOfficial: false,
+    price: 95,
+    rating: 4.75,
+    reviews: 112,
+    imageUrl: 'https://images.unsplash.com/photo-1527515637462-cff18e15552a?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1527515637462-cff18e15552a?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Trapeador elaborado con pabilo de algodón cerrado súper absorbente. Peso neto de 500 gramos.',
+    longDesc: 'Pabilo de hilaza de algodón de alta torsión térmica fabricada por Genéricos de Limpieza. Proporciona una extraordinaria absorción capilar, atrapando grasas flotantes y sedimentos suspendidos de una sola pasada.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Genéricos de Limpieza (Socio Aliado)',
+      'Peso en algodón': '500 gramos de hilaza virgen',
+      'Bastidor': 'Madera de pino con grapa de alta fijación'
+    }
+  },
+  {
+    id: 'aliado-18',
+    sku: 'JAR-005',
+    name: 'Fibra Verde Abrasiva Industrial (Corte 12)',
+    category: 'Instrumentación y Accesorios',
+    brand: 'Rigasa Limpieza',
+    isOfficial: false,
+    price: 220,
+    rating: 4.61,
+    reviews: 51,
+    imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Paquete de 12 piezas de fibra abrasiva verde de alto desempeño mecánico. Anti-microbiano.',
+    longDesc: 'Fibras tejidas con filamentos de grafito abrasivo aglomerados súper resistentes. Ideal para la desincrustación extrema de asadores, charolas o refractarios en áreas de producción de alimentos sin perder espesor primario.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Rigasa Limpieza (Socio Aliado)',
+      'Embalaje': 'Paquete hermético de 12 piezas gigantes',
+      'Fórmula activa': 'Mineral abrasivo de óxido de aluminio con tratamiento funguicida'
+    }
+  },
+  {
+    id: 'aliado-19',
+    sku: 'JAR-006',
+    name: 'Esponjas Multiusos Doble Cara (Caja 24)',
+    category: 'Instrumentación y Accesorios',
+    brand: 'Rigasa Limpieza',
+    isOfficial: false,
+    price: 180,
+    rating: 4.69,
+    reviews: 47,
+    imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600',
+    allImages: [
+      'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&q=80&w=600'
+    ],
+    shortDesc: 'Paquete con 24 esponjas sintéticas de doble cara activa. Excelente espumación de retención.',
+    longDesc: 'Esponja de celulosa hidrofílica de alto rendimiento que combina una cara suave altamente absorbente con un respaldo de fibra abrasiva verde fina, apta para el aseo de superficies delicadas o vidriados sin rayadura.',
+    availability: 'Disponible para envío inmediato',
+    specs: {
+      'Marca': 'Rigasa Limpieza (Socio Aliado)',
+      'Cantidad': '24 esponjas por paquete empacadas en origen',
+      'Lavabilidad': 'Aptas para esterilizar en autoclaves térmicas'
     }
   }
 ];
 
-const categories = [
-  { id: 'all', name: 'Todos los productos', icon: <ChevronRight size={20} /> },
-  { id: '1', name: 'Químicos Industriales', icon: <Droplet size={20} /> },
-  { id: '2', name: 'Equipos de Protección (EPP)', icon: <Shield size={20} /> },
-  { id: '3', name: 'Papel & Celulosa', icon: <Wind size={20} /> },
-  { id: '4', name: 'Maquinaria de Limpieza', icon: <Wrench size={20} /> },
-  { id: '5', name: 'Gestión de Residuos', icon: <Trash2 size={20} /> },
-  { id: '6', name: 'Implementos Manuales', icon: <Brush size={20} /> },
-  { id: '7', name: 'Accesorios y Otros', icon: <Zap size={20} /> },
+// --- Slides Exclusivas del Carrusel del Hero (Exclusivos Grado Cero) ---
+const HERO_SLIDES = [
+  {
+    title: 'Cloruro de Benzalconio Orgánico Cero',
+    subtitle: 'NUESTRA REINVENCIÓN MÁS EXCLUSIVA EN DESINFECCIÓN',
+    tagline: 'Primero lo nuestro. Después, lo mejor del mercado.',
+    description: 'La pureza de un amonio cuaternario de grado alimenticio concentrado al máximo estándar biológico. Inocuidad total y protección prolongada para tu industria en Bidón de 20l.',
+    productId: 'gc-01',
+    imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&q=80&w=1400'
+  }
+];
+
+const CATEGORIES = [
+  { id: 'all', name: 'Todos los productos' },
+  { id: 'biocidas', name: 'Desinfección de Alta Gama' },
+  { id: 'quimicos', name: 'Detergentes y Químicos' },
+  { id: 'papel', name: 'Papel e Higiene' },
+  { id: 'proteccion', name: 'Protección Personal' },
+  { id: 'jarcieria', name: 'Instrumentación y Accesorios' }
 ];
 
 export default function InicioClient() {
-  // === ESTADOS GENERALES ===
-  const [products, setProducts] = useState<Product[]>(initialProductsList);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  // === ESTADOS REACTIVOS ===
+  const [products] = useState<Product[]>(PRODUCTS_DATA);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [orderNotes, setOrderNotes] = useState<string>('');
-  const [successOrderNumber, setSuccessOrderNumber] = useState<string | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [brandFilter, setBrandFilter] = useState<'all' | 'official' | 'allies'>('all');
+  const [priceMax, setPriceMax] = useState<number>(4000);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // === ESTADOS DE AUTENTICACIÓN ===
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [authStep, setAuthStep] = useState<'email' | 'password' | 'register' | 'google_picker' | 'phone_number' | 'phone_verify' | 'success'>('email');
-  const [authEmail, setAuthEmail] = useState<string>('');
-  const [authPassword, setAuthPassword] = useState<string>('');
-  const [authName, setAuthName] = useState<string>('');
-  const [authCompanyName, setAuthCompanyName] = useState<string>('');
-  const [authPhone, setAuthPhone] = useState<string>('');
-  const [smsCode, setSmsCode] = useState<string>('');
-  const [smsCountdown, setSmsCountdown] = useState<number>(60);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(false);
-  const [isStripeLoading, setIsStripeLoading] = useState<boolean>(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState<boolean>(false);
+  // --- Estados de Autenticación de Lujo ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authUser, setAuthUser] = useState<{ name: string; email: string } | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authIsRegisterState, setAuthIsRegisterState] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  // === ESTADOS DE IA ORIENTADORA ===
-  const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
-  const [assistantMessages, setAssistantMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([
-    {
-      sender: 'bot',
-      text: '¡Hola! Soy tu **Asistente de Orientación de Grado Cero B2B** 🧪.\n\nEstoy aquí para guiarte en nuestro catálogo y uso seguro del sitio. ¿En qué te puedo ayudar hoy? Puedes preguntarme:\n\n- **¿Cómo iniciar sesión?**\n- **¿Dónde buscar un producto?**\n- **¿Qué información hay de los productos de limpieza?**\n- **¿Cómo solicitar una cotización B2B?**'
-    }
-  ]);
-  const [assistantInput, setAssistantInput] = useState<string>('');
-  const [isAssistantLoading, setIsAssistantLoading] = useState<boolean>(false);
+  // --- Estado de Cotización Mayorista Especial ---
+  const [wholesaleModalOpen, setWholesaleModalOpen] = useState(false);
+  const [wholesaleProduct, setWholesaleProduct] = useState<Product | null>(null);
+  const [wholesaleEmail, setWholesaleEmail] = useState('');
+  const [wholesaleUnits, setWholesaleUnits] = useState(50);
+  const [wholesaleNotes, setWholesaleNotes] = useState('');
+  const [wholesaleSuccess, setWholesaleSuccess] = useState(false);
 
-  const handleSendAssistantMessage = async (textToSend?: string) => {
-    const rawText = textToSend || assistantInput;
-    if (!rawText.trim() || isAssistantLoading) return;
-
-    if (!textToSend) {
-      setAssistantInput('');
-    }
-
-    const newMessages = [...assistantMessages, { sender: 'user' as const, text: rawText }];
-    setAssistantMessages(newMessages);
-    setIsAssistantLoading(true);
-
-    try {
-      const res = await fetch('/api/assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: rawText, feature: 'guide' }),
-      });
-      const data = await res.json();
-      if (data.error) {
-        setAssistantMessages(prev => [...prev, { sender: 'bot' as const, text: 'Disculpa, el orientador virtual no está disponible en este momento. Por favor, intenta de nuevo.' }]);
-      } else {
-        setAssistantMessages(prev => [...prev, { sender: 'bot' as const, text: data.text }]);
-      }
-    } catch (err) {
-      console.error(err);
-      setAssistantMessages(prev => [...prev, { sender: 'bot' as const, text: 'Hubo un error de conectividad al comunicarme con el sistema de asistencia. Por favor, revisa tu red.' }]);
-    } finally {
-      setIsAssistantLoading(false);
-    }
-  };
-
-  const formatMessageText = (text: string) => {
-    const lines = text.split('\n');
-    return lines.map((line, idx) => {
-      const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ');
-      const content = isBullet ? line.trim().substring(2) : line;
-
-      const parts = content.split(/\*\*(.*?)\*\*/g);
-      const parsedLine = parts.map((part, pIdx) => {
-        if (pIdx % 2 === 1) {
-          return <strong key={pIdx} className="font-extrabold text-orange-400">{part}</strong>;
-        }
-        return part;
-      });
-
-      if (isBullet) {
-        return (
-          <li key={idx} className="ml-4 list-disc text-xs text-neutral-300 mb-1 leading-relaxed">
-            {parsedLine}
-          </li>
-        );
-      }
-
-      return (
-        <p key={idx} className="text-xs text-neutral-200 mb-2 leading-relaxed whitespace-pre-line">
-          {parsedLine}
-        </p>
-      );
-    });
-  };
-
-  // === AUXILIAR DE ACCIÓN DESPUÉS DEL LOGIN ===
-  const [pendingCartAction, setPendingCartAction] = useState<{ product: Product; quantity: number } | null>(null);
-
-  // === DETECCIÓN Y SINCRONIZACIÓN CON LOCAL STORAGE ===
+  // === EFECTOS ===
+  // Carrusel automático para el Hero (intervalo de 6 segundos)
   useEffect(() => {
-    // Sincronizar sesión de usuario
-    const savedUser = localStorage.getItem('grado_cero_user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        setTimeout(() => {
-          setCurrentUser(parsed);
-          setIsAuthenticated(true);
-        }, 0);
-      } catch (err) {
-        console.error("Error al leer sesión remota:", err);
-      }
-    }
+    const slideTimer = setInterval(() => {
+      setActiveHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 6000);
+    return () => clearInterval(slideTimer);
+  }, []);
 
-    // Sincronizar carrito local
-    const savedCart = localStorage.getItem('grado_cero_cart');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        setTimeout(() => {
-          setCart(parsedCart);
-        }, 0);
-      } catch (e) {
-        console.error("Error al leer carrito local:", e);
-      }
-    }
+  // Cargar perfil local y carrito de forma segura en el cliente (evitando re-renderizados síncronos)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('gc_luxury_cart');
+      const savedUser = localStorage.getItem('gc_luxury_user');
+      
+      const timer = setTimeout(() => {
+        if (savedCart) {
+          try { 
+            setCart(JSON.parse(savedCart)); 
+          } catch (e) { 
+            console.error(e); 
+          }
+        }
+        if (savedUser) {
+          try {
+            const u = JSON.parse(savedUser);
+            setAuthUser(u);
+            setIsAuthenticated(true);
+          } catch (e) { 
+            console.error(e); 
+          }
+        }
+      }, 0);
 
-    // Sincronizar inventario modificado localmente si existe
-    const savedProducts = localStorage.getItem('grado_cero_products');
-    if (savedProducts) {
-      try {
-        const parsedProducts = JSON.parse(savedProducts);
-        setTimeout(() => {
-          setProducts(parsedProducts);
-        }, 0);
-      } catch (e) {
-        console.error("Error al leer productos locales:", e);
-      }
+      return () => clearTimeout(timer);
     }
   }, []);
 
-  // Timer para Cuenta Regresiva de SMS
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (authStep === 'phone_verify' && smsCountdown > 0) {
-      timer = setTimeout(() => setSmsCountdown(prev => prev - 1), 1000);
-    }
-    return () => clearTimeout(timer);
-  }, [authStep, smsCountdown]);
-
-  // Almacenar datos en LocalStorage ante cambios
-  const updateCartState = (newCart: CartItem[]) => {
+  const saveCart = (newCart: CartItem[]) => {
     setCart(newCart);
-    localStorage.setItem('grado_cero_cart', JSON.stringify(newCart));
+    localStorage.setItem('gc_luxury_cart', JSON.stringify(newCart));
   };
 
-  const handleUpdateUserSession = (user: UserSession | null) => {
-    if (user) {
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      localStorage.setItem('grado_cero_user', JSON.stringify(user));
+  // === ACCIONES DE COMPRA ===
+  const handleAddToCart = (product: Product, quantity = 1, showDrawer = true) => {
+    const existing = cart.find(item => item.product.id === product.id);
+    let updated: CartItem[];
+    if (existing) {
+      updated = cart.map(item =>
+        item.product.id === product.id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      );
     } else {
-      setCurrentUser(null);
-      setIsAuthenticated(false);
-      localStorage.removeItem('grado_cero_user');
+      updated = [...cart, { product, quantity }];
+    }
+    saveCart(updated);
+    if (showDrawer) {
+      setIsCartOpen(true);
     }
   };
 
-  const handleLogOut = () => {
-    handleUpdateUserSession(null);
-    setIsAccountMenuOpen(false);
+  const handleRemoveFromCart = (productId: string) => {
+    const updated = cart.filter(item => item.product.id !== productId);
+    saveCart(updated);
   };
 
-  // === FILTRADO DE PRODUCTOS ===
-  // Función auxiliar para normalizar texto eliminando acentos/diacríticos para una búsqueda robusta en español
-  const removeAccentsAndLowercase = (str: string): string => {
-    return str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+  const handleUpdateQuantity = (productId: string, quantity: number) => {
+    if (quantity < 1) return;
+    const updated = cart.map(item =>
+      item.product.id === productId ? { ...item, quantity } : item
+    );
+    saveCart(updated);
   };
 
-  const filteredProducts = products.filter(p => {
-    const matchesCategory = selectedCategory === 'all' || p.category === categories.find(c => c.id === selectedCategory)?.name;
-    
-    const normalizedSearch = removeAccentsAndLowercase(searchTerm);
-    const matchesSearch = 
-      removeAccentsAndLowercase(p.name).includes(normalizedSearch) || 
-      removeAccentsAndLowercase(p.sku).includes(normalizedSearch) ||
-      removeAccentsAndLowercase(p.category).includes(normalizedSearch);
-      
-    return matchesCategory && matchesSearch;
-  });
-
-  // === TRATAMIENTO DE PRODUCTO DETALLE SELECCIONADO (MERCADO LIBRE STYLE) ===
-  const handleSelectProduct = (product: Product) => {
-    setSelectedProduct(product);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Redirección de Conversión WhatsApp Directa (ESTRATEGIA CENTRAL)
+  const handleBuyOnWhatsApp = (product: Product) => {
+    const defaultText = `Hola Grado Cero, me interesa adquirir el producto oficial "${product.name}" (SKU: ${product.sku}) con valor de $${product.price} MXN. ¿Me podrían indicar la cobertura de entrega y opciones de empaque premium? Muchas gracias.`;
+    const encoded = encodeURIComponent(defaultText);
+    const url = `https://wa.me/525555555555?text=${encoded}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  // Obtener productos similares para pantalla de detalle (Misma Categoría, excepto el seleccionado)
-  const similarProducts = selectedProduct 
-    ? products.filter(p => p.category === selectedProduct.category && p.id !== selectedProduct.id).slice(0, 4)
-    : [];
-
-  // === EVENTOS DEL CARRITO / COTIZACIONES ===
-  const addToCart = (product: Product, quantity: number) => {
-    const existingIndex = cart.findIndex(item => item.product.id === product.id);
-    let newCart = [...cart];
-    
-    if (existingIndex > -1) {
-      newCart[existingIndex].quantity += quantity;
-    } else {
-      newCart.push({ product, quantity });
-    }
-
-    // Limitar segun stock disponible
-    if (newCart[existingIndex > -1 ? existingIndex : newCart.length - 1].quantity > product.stock) {
-      newCart[existingIndex > -1 ? existingIndex : newCart.length - 1].quantity = product.stock;
-    }
-
-    updateCartState(newCart);
-    setIsCartOpen(true);
-  };
-
-  // Acción principal de checkout / iniciar cotización
-  const handleStartQuoteProcess = (product: Product, quantity: number) => {
-    if (!isAuthenticated) {
-      setPendingCartAction({ product, quantity });
-      setAuthStep('email');
-      setAuthError(null);
-      setIsAuthModalOpen(true);
-    } else {
-      addToCart(product, quantity);
-    }
-  };
-
-  // Enviar formulario de Cotización final al administrador (prisma & localStorage)
-  const handleFinalizeQuoteSubmission = () => {
+  const handleCartStripeCheckout = () => {
     if (cart.length === 0) return;
-    if (!currentUser) {
-      setAuthStep('email');
-      setIsAuthModalOpen(true);
-      return;
-    }
-
     setIsAuthLoading(true);
-
+    // Simulación de pasarela de pago premium
     setTimeout(() => {
-      // Generar ID único y número de cotizacion
-      const quoteId = 'qt_' + Math.random().toString(36).substring(2, 9);
-      const randHex = Math.random().toString(16).substring(2, 8).toUpperCase();
-      const quoteNumber = `COT-${randHex}`;
-
-      const totalAmount = cart.reduce((sum, item) => sum + (item.quantity * item.product.finalSalePrice), 0);
-
-      const newQuote: QuoteItem = {
-        id: quoteId,
-        quoteNumber,
-        clientName: currentUser.companyName,
-        companyName: currentUser.companyName,
-        agentName: currentUser.name || currentUser.email,
-        itemCount: cart.length,
-        totalAmount,
-        status: 'PENDING',
-        date: new Date().toISOString(),
-        notes: orderNotes,
-        items: cart.map(c => ({
-          productName: c.product.name,
-          quantity: c.quantity,
-          unitPrice: c.product.finalSalePrice
-        }))
-      };
-
-      // 1. Guardar cotización en localStorage de manera que el panel /admin pueda leerla
-      const existingQuotesRaw = localStorage.getItem('grado_cero_quotes');
-      let existingQuotes: any[] = [];
-      if (existingQuotesRaw) {
-        try {
-          existingQuotes = JSON.parse(existingQuotesRaw);
-        } catch (e) {}
-      }
-      existingQuotes.unshift(newQuote);
-      localStorage.setItem('grado_cero_quotes', JSON.stringify(existingQuotes));
-
-      // 2. Disminuir stock en LocalStorage para simular almacén vivo
-      const updatedProducts = products.map(productItem => {
-        const itemInCart = cart.find(c => c.product.id === productItem.id);
-        if (itemInCart) {
-          return {
-            ...productItem,
-            stock: Math.max(0, productItem.stock - itemInCart.quantity)
-          };
-        }
-        return productItem;
-      });
-
-      setProducts(updatedProducts);
-      localStorage.setItem('grado_cero_products', JSON.stringify(updatedProducts));
-
-      // Vaciar carrito
-      updateCartState([]);
-      setOrderNotes('');
-      setSuccessOrderNumber(quoteNumber);
+      setIsAuthLoading(false);
+      alert('Redirigiendo de forma segura a la pasarela de pagos integrados de Grado Cero con Stripe.');
+      saveCart([]);
       setIsCartOpen(false);
-      setIsAuthLoading(false);
-      
-      // Si el detalle estaba abierto, actualizar stock del actual seleccionado
-      if (selectedProduct) {
-        const currentUpdated = updatedProducts.find(p => p.id === selectedProduct.id);
-        if (currentUpdated) {
-          setSelectedProduct(currentUpdated);
-        }
-      }
     }, 1500);
   };
 
-  // Enviar el carrito al controlador de pasarela de Stripe B2B o simulación
-  const handleStripeCheckout = async () => {
-    if (cart.length === 0) return;
-    if (!currentUser) {
-      setAuthStep('email');
-      setIsAuthModalOpen(true);
-      return;
-    }
-
-    setIsStripeLoading(true);
-    setCheckoutError(null);
-
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart.map(item => ({
-            productId: item.product.id,
-            quantity: item.quantity
-          })),
-          user: {
-            email: currentUser.email,
-            name: currentUser.name,
-            companyName: currentUser.companyName
-          }
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setCheckoutError(data.error);
-        return;
-      }
-
-      if (data.url) {
-        // Limpiamos los estados locales
-        updateCartState([]);
-        setOrderNotes('');
-        setIsCartOpen(false);
-        // Redirección directa hacia la pasarela de Stripe (o simulación exitosa)
-        window.location.href = data.url;
-      }
-    } catch (error: any) {
-      console.error("Fallo durante el checkout con Stripe:", error);
-      setCheckoutError("Ocurrió un inconveniente al conectar con el servidor de pagos.");
-    } finally {
-      setIsStripeLoading(false);
-    }
-  };
-
-  // === LOGICA DE AUTENTICACION SIMULADA MERCADO LIBRE ===
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  // --- Flujo de Autenticación Local ---
+  const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authEmail || !authEmail.includes('@')) {
-      setAuthError('Ingresa un correo electrónico corporativo válido.');
+    setAuthError('');
+    if (!authEmail.includes('@')) {
+      setAuthError('Ingesa un correo electrónico válido');
       return;
     }
-    setAuthError(null);
     setIsAuthLoading(true);
-
-    // Simular retraso de búsqueda en la DB
     setTimeout(() => {
       setIsAuthLoading(false);
-      // Simular que ciertas direcciones ya existen y otras son de registro nuevo
-      // Si es un email conocido como un email común o de prueba, va a password, sino va a registro.
-      if (authEmail.includes('alexis') || authEmail.includes('admin') || authEmail.includes('test')) {
-        setAuthStep('password');
-      } else {
-        setAuthStep('register');
-        setAuthName('');
-        setAuthCompanyName('');
-        setAuthPhone('');
-      }
-    }, 800);
-  };
-
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (authPassword.length < 4) {
-      setAuthError('La contraseña debe tener al menos 4 caracteres.');
-      return;
-    }
-    setAuthError(null);
-    setIsAuthLoading(true);
-
-    setTimeout(() => {
-      setIsAuthLoading(false);
-      const name = authEmail.split('@')[0];
-      const simulatedUser: UserSession = {
-        email: authEmail,
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        companyName: 'Industrias ' + (name.charAt(0).toUpperCase() + name.slice(1)) + ' S.A.',
-        phone: '+52 55 ' + Math.floor(10000000 + Math.random() * 90000000),
-        loginMethod: 'email'
+      const simulatedUser = {
+        name: authIsRegisterState ? authName || 'Socio Grado Cero' : authEmail.split('@')[0],
+        email: authEmail
       };
-      
-      handleLoginSuccess(simulatedUser);
-    }, 1000);
-  };
-
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authName || !authCompanyName || !authPassword) {
-      setAuthError('Por favor complete todos los datos requeridos.');
-      return;
-    }
-    setAuthError(null);
-    setIsAuthLoading(true);
-
-    setTimeout(() => {
-      setIsAuthLoading(false);
-      const simulatedUser: UserSession = {
-        email: authEmail,
-        name: authName,
-        companyName: authCompanyName,
-        phone: authPhone || '+52 55 1234 5678',
-        loginMethod: 'email'
-      };
-      
-      handleLoginSuccess(simulatedUser);
-    }, 1000);
-  };
-
-  const handleGoogleAuthInit = () => {
-    setAuthStep('google_picker');
-    setAuthError(null);
-  };
-
-  const handlePhoneAuthInit = () => {
-    setAuthStep('phone_number');
-    setAuthError(null);
-    setAuthPhone('');
-  };
-
-  const selectGoogleAccount = (email: string, name: string) => {
-    setIsAuthLoading(true);
-    setTimeout(() => {
-      setIsAuthLoading(false);
-      const simulatedUser: UserSession = {
-        email: email,
-        name: name,
-        companyName: 'Corporativo ' + name.split(' ')[0] + ' S.A.B.',
-        phone: '+52 55 9876 5432',
-        loginMethod: 'google'
-      };
-      handleLoginSuccess(simulatedUser);
-    }, 1500);
-  };
-
-  const handlePhoneSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authPhone || authPhone.length < 8) {
-      setAuthError('Ingresa un número de teléfono celular válido.');
-      return;
-    }
-    setAuthError(null);
-    setIsAuthLoading(true);
-
-    setTimeout(() => {
-      setIsAuthLoading(false);
-      setAuthStep('phone_verify');
-      setSmsCountdown(60);
-      setSmsCode('');
-    }, 1000);
-  };
-
-  const handlePhoneVerifySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (smsCode.length < 6) {
-      setAuthError('El código verificador SMS debe tener 6 dígitos.');
-      return;
-    }
-    setAuthError(null);
-    setIsAuthLoading(true);
-
-    setTimeout(() => {
-      setIsAuthLoading(false);
-      const simulatedUser: UserSession = {
-        email: 'movil_' + authPhone.replace(/\D/g, '') + '@gradocero.com',
-        name: 'Usuario Celular',
-        companyName: 'Consumidor Telefónico B2B',
-        phone: authPhone,
-        loginMethod: 'phone'
-      };
-      handleLoginSuccess(simulatedUser);
+      setAuthUser(simulatedUser);
+      setIsAuthenticated(true);
+      localStorage.setItem('gc_luxury_user', JSON.stringify(simulatedUser));
+      setAuthModalOpen(false);
+      // Reset campos
+      setAuthEmail('');
+      setAuthName('');
+      setAuthPassword('');
     }, 1200);
   };
 
-  const handleLoginSuccess = (user: UserSession) => {
-    handleUpdateUserSession(user);
-    setAuthStep('success');
+  const handleLogOut = () => {
+    setIsAuthenticated(false);
+    setAuthUser(null);
+    localStorage.removeItem('gc_luxury_user');
+  };
 
-    // Si había una acción de cotización pendiente, ejecutarla automáticamente
-    if (pendingCartAction) {
-      addToCart(pendingCartAction.product, pendingCartAction.quantity);
-      setPendingCartAction(null);
-    }
-
+  // --- Enviar Solicitud de Mayoreo ---
+  const handleWholesaleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wholesaleEmail) return;
+    setIsAuthLoading(true);
     setTimeout(() => {
-      setIsAuthModalOpen(false);
-      setAuthEmail('');
-      setAuthPassword('');
-      setAuthName('');
-      setAuthCompanyName('');
-      setAuthPhone('');
-      setSmsCode('');
-    }, 1800);
+      setIsAuthLoading(false);
+      setWholesaleSuccess(true);
+      setTimeout(() => {
+        setWholesaleModalOpen(false);
+        setWholesaleSuccess(false);
+        setWholesaleNotes('');
+      }, 3000);
+    }, 1400);
+  };
+
+  // === MOTOR DE FILTRADO INTELIGENTE ===
+  const filteredProducts = products.filter(p => {
+    // Normalizar acentos y strings para búsqueda robusta
+    const query = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const nameMatch = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(query);
+    const skuMatch = p.sku.toLowerCase().includes(query);
+    const descMatch = p.shortDesc.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(query);
+    const searchMatch = nameMatch || skuMatch || descMatch;
+
+    // Filtro Categoría
+    const catObject = CATEGORIES.find(c => c.id === selectedCategory);
+    const categoryMatch = selectedCategory === 'all' || p.category === catObject?.name;
+
+    // Filtro Fabricante
+    const brandMatch =
+      brandFilter === 'all' ||
+      (brandFilter === 'official' && p.isOfficial) ||
+      (brandFilter === 'allies' && !p.isOfficial);
+
+    // Filtro Precio Max
+    const priceMatch = p.price <= priceMax;
+
+    return searchMatch && categoryMatch && brandMatch && priceMatch;
+  });
+
+  const officialProducts = products.filter(p => p.isOfficial);
+  const alliedProducts = products.filter(p => !p.isOfficial);
+
+  const scrollIntoView = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setMobileMenuOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-200 font-sans selection:bg-orange-500/30 selection:text-white">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans antialiased overflow-x-hidden selection:bg-amber-500/25 selection:text-amber-300">
       
-      {/* HEADER PRINCIPAL CORPORATIVO */}
-      <header className="sticky top-0 z-40 bg-neutral-900 border-b border-neutral-800 shadow-xl py-4 backdrop-blur-md bg-opacity-90">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      {/* HEADER DE ALTA GAMA (FIJO) */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-neutral-950/70 backdrop-blur-md border-b border-white/5 py-4 px-4 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
-          <div className="flex items-center gap-4 cursor-pointer" onClick={() => setSelectedProduct(null)}>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-1.5 transition hover:scale-[1.02]">
-              <span className="text-orange-500 font-extrabold">GRADO</span> CERO
-            </h1>
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded text-[10px] bg-neutral-800 border border-neutral-700 text-neutral-400 font-mono font-medium uppercase tracking-widest">
-              B2B PORTAL
+          {/* Logo Corporativo */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setSelectedProduct(null)}>
+            <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-700 flex items-center justify-center font-serif text-black font-extrabold text-sm tracking-tighter">
+              GC
+              <div className="absolute inset-0.5 rounded-md border border-neutral-950/30" />
+            </div>
+            <span className="font-extrabold text-white tracking-widest text-base sm:text-lg">
+              GRADO CERO <span className="text-[10px] text-amber-500 font-mono font-bold ml-1 uppercase tracking-[0.2em]">Maison</span>
             </span>
           </div>
-          
-          {/* BARRA DE BÚSQUEDA INTEGRADA EN TIEMPO REAL */}
-          <div className="flex-1 max-w-2xl px-2 relative">
-            <div className="relative group">
+
+          {/* Menú de Navegación */}
+          <nav className="hidden lg:flex items-center gap-8 text-xs uppercase tracking-[0.15em] font-medium text-neutral-400">
+            <button onClick={() => { setSelectedProduct(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-amber-400 transition-colors cursor-pointer">Inicio</button>
+            <button onClick={() => scrollIntoView('grado-cero-brand')} className="hover:text-amber-400 transition-colors cursor-pointer">Grado Cero</button>
+            <button onClick={() => scrollIntoView('allied-catalog')} className="hover:text-amber-400 transition-colors cursor-pointer">Catálogo</button>
+            <button onClick={() => { setBrandFilter('allies'); scrollIntoView('allied-catalog'); }} className="hover:text-amber-400 transition-colors cursor-pointer">Marcas Aliadas</button>
+            <button onClick={() => { setWholesaleProduct(null); setWholesaleModalOpen(true); }} className="hover:text-amber-400 transition-colors cursor-pointer text-amber-500">Mayoreo</button>
+            <button onClick={() => scrollIntoView('grado-cero-footer')} className="hover:text-amber-400 transition-colors cursor-pointer">Contacto</button>
+          </nav>
+
+          {/* Iconos de Interacción */}
+          <div className="flex items-center gap-4 sm:gap-5">
+            
+            {/* Buscador Rápido */}
+            <div className="relative hidden md:block w-48 lg:w-64 group">
               <input 
-                type="text" 
-                placeholder="Buscar desengrasantes, mascarillas, SKU, categorías..."
+                type="text"
+                placeholder="Buscar esencia, crema..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  // Si estamos en detalle y busca, salir del detalle para mostrar resultados de catálogo
-                  if (selectedProduct) setSelectedProduct(null);
-                }}
-                className="w-full bg-neutral-800/80 text-neutral-100 border border-neutral-700 rounded-full py-2.5 px-5 pl-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all placeholder-neutral-500 text-sm focus:bg-neutral-800"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-neutral-900/60 text-xs text-neutral-200 placeholder-neutral-500 border border-white/5 rounded-full px-4 py-2 pl-9 focus:outline-none focus:border-amber-400/50 focus:w-72 transition-all duration-300"
               />
-              <Search className="absolute left-4 top-3 text-neutral-500 group-focus-within:text-orange-500 transition-colors w-4 h-4" />
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-4 top-3 text-neutral-400 hover:text-white"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-5">
-            {/* INICIAR SESIÓN O PANEL DE MI CUENTA */}
-            <div className="relative">
-              {isAuthenticated && currentUser ? (
-                <div>
-                  <button 
-                    onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800/60 transition group text-sm font-semibold tracking-wide text-neutral-300 hover:text-white"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs">
-                      {currentUser.name ? currentUser.name.slice(0,2).toUpperCase() : 'US'}
-                    </div>
-                    <span className="hidden md:inline truncate max-w-[124px]">
-                      {currentUser.name}
-                    </span>
-                    <ChevronDown size={14} className={`text-neutral-500 transition-transform ${isAccountMenuOpen ? 'rotate-180':''}`} />
-                  </button>
-
-                  <AnimatePresence>
-                    {isAccountMenuOpen && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setIsAccountMenuOpen(false)} />
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 mt-2 w-64 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl p-4 z-50 text-left"
-                        >
-                          <div className="border-b border-neutral-800 pb-3 mb-3">
-                            <p className="text-xs text-neutral-500 font-mono uppercase tracking-widest">CLIENTE B2B ACTIVADO</p>
-                            <h4 className="font-bold text-white text-sm truncate">{currentUser.name}</h4>
-                            <p className="text-xs text-neutral-400 truncate flex items-center gap-1.5 mt-1">
-                              <Building2 size={12} className="text-orange-500 shrink-0" />
-                              {currentUser.companyName}
-                            </p>
-                            <p className="text-xs text-neutral-500 truncate mt-1 overflow-hidden">{currentUser.email}</p>
-                          </div>
-                          
-                          <Link 
-                            href="/admin/cotizaciones" 
-                            className="flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800/70 rounded-lg transition"
-                          >
-                            <FileText size={16} className="text-neutral-400" />
-                            Portal de Administración
-                          </Link>
-
-                          <button 
-                            onClick={handleLogOut}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition mt-2 text-left"
-                          >
-                            <LogOut size={16} />
-                            Cerrar Sesión B2B
-                          </button>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <button 
-                  onClick={() => {
-                    setAuthStep('email');
-                    setAuthError(null);
-                    setIsAuthModalOpen(true);
-                  }}
-                  className="text-xs md:text-sm font-semibold tracking-wider text-orange-400 hover:text-orange-300 transition-colors border border-orange-500/20 px-4 py-2 rounded-full hover:bg-orange-500/5 cursor-pointer"
-                  id="header-login-btn"
-                >
-                  INGRESAR / REGISTRARSE
-                </button>
-              )}
+              <Search size={14} className="absolute left-3 top-2.5 text-neutral-500 group-focus-within:text-amber-400 transition-colors" />
             </div>
 
-            {/* BOTÓN CARRITO / SOLICITUD DE COTIZACIÓN */}
+            {/* Carrito de Compras */}
             <button 
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center gap-2 bg-neutral-800 border border-neutral-700/60 px-4 py-2 rounded-full hover:bg-neutral-700 hover:border-neutral-600 transition cursor-pointer relative group"
+              className="relative p-2 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              id="header-cart-trigger"
             >
-              <ShoppingCart className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-white text-xs md:text-sm">
-                {cart.reduce((sum, item) => sum + item.quantity, 0)}
-              </span>
-              <span className="hidden sm:inline text-xs font-medium text-neutral-300">Cotizar</span>
-              {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-ping" />
+              <ShoppingCart size={18} className="stroke-[1.5]" />
+              {cart.reduce((sum, item) => sum + item.quantity, 0) > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-[9px] font-black text-black rounded-full flex items-center justify-center shadow-lg border border-neutral-950">
+                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                </span>
               )}
+            </button>
+
+            {/* Módulo de Cuenta / Login */}
+            {isAuthenticated && authUser ? (
+              <div className="flex items-center gap-3">
+                <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-xs font-bold text-black border border-white/10 shrink-0">
+                  {authUser.name.slice(0, 2).toUpperCase()}
+                </div>
+                <button 
+                  onClick={handleLogOut}
+                  className="hidden sm:inline-block text-[10px] uppercase tracking-wider text-neutral-500 hover:text-white transition-colors"
+                >
+                  Salir
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => { setAuthIsRegisterState(false); setAuthModalOpen(true); }}
+                className="p-2 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <User size={18} className="stroke-[1.5]" />
+              </button>
+            )}
+
+            {/* Menú de Dispositivo Móvil */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+            >
+              <Menu size={20} />
             </button>
 
           </div>
         </div>
       </header>
 
-      {/* NOTIFICACIÓN DE SOLICITUD GENERADA CON ÉXITO */}
-      {successOrderNumber && (
-        <div className="bg-gradient-to-r from-orange-600 to-amber-700 text-white py-4 px-6 relative flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/10 rounded-full">
-              <Check size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-sm md:text-base">¡Tu Cotización Corporativa {successOrderNumber} ha sido enviada con éxito!</p>
-              <p className="text-xs opacity-90">Un asesor técnico de Grado Cero evaluará tus volúmenes comerciales para aplicar descuentos de hasta el 35%.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/admin/cotizaciones" 
-              className="bg-white text-orange-950 font-bold px-4 py-1.5 rounded-lg text-xs hover:bg-neutral-100 transition whitespace-nowrap"
-            >
-              Ver en Panel Admin
-            </Link>
-            <button 
-              onClick={() => setSuccessOrderNumber(null)}
-              className="text-white hover:opacity-80 p-1"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* MENÚ MÓVIL DESPLEGABLE */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="fixed top-[65px] left-0 right-0 z-45 bg-neutral-950 border-b border-white/10 lg:hidden overflow-hidden flex flex-col p-6 space-y-4 text-sm font-semibold tracking-widest text-center"
+          >
+            <button onClick={() => { setSelectedProduct(null); window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }} className="text-neutral-300 hover:text-amber-400 py-2">Inicio</button>
+            <button onClick={() => scrollIntoView('grado-cero-brand')} className="text-neutral-300 hover:text-amber-400 py-2">Grado Cero</button>
+            <button onClick={() => scrollIntoView('allied-catalog')} className="text-neutral-300 hover:text-amber-400 py-2">Catálogo</button>
+            <button onClick={() => { setBrandFilter('allies'); scrollIntoView('allied-catalog'); setMobileMenuOpen(false); }} className="text-neutral-300 hover:text-amber-400 py-2">Marcas Aliadas</button>
+            <button onClick={() => { setWholesaleProduct(null); setWholesaleModalOpen(true); setMobileMenuOpen(false); }} className="text-amber-500 py-2">Mayoreo</button>
+            <button onClick={() => scrollIntoView('grado-cero-footer')} className="text-neutral-300 hover:text-amber-400 py-2">Contacto</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <AnimatePresence mode="wait">
-          {!selectedProduct ? (
-            
-            // ==================== LISTA DE PRODUCTOS / PORTADA ====================
-            <motion.div 
-              key="catalog"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="space-y-12"
-            >
-              
-              {/* BANNER PRINCIPAL (HERO) */}
-              <section className="relative rounded-2xl overflow-hidden bg-neutral-900 aspect-[21/9] md:aspect-[32/8] border border-neutral-800 shadow-2xl flex items-center group">
-                <div className="absolute inset-0 z-0">
+      <div className="h-[75px]" /> {/* Espacio para el header fijo */}
+
+      <AnimatePresence mode="wait">
+        {!selectedProduct ? (
+          
+          <motion.div 
+            key="home-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* HERO PRINCIPAL: ESCAPARATE PREMIUM (CAROUSEL AUTOMÁTICO DE ANCHO COMPLETO - EXCLUSIVAMENTE GRADO CERO) */}
+            <section className="relative w-full overflow-hidden bg-neutral-900 border-b border-white/5" id="carrusel-hero">
+              <div className="relative h-[450px] sm:h-[550px] md:h-[650px] flex items-center justify-center">
+                
+                {/* Animación del Fondo del Slide */}
+                <div className="absolute inset-0">
                   <Image 
-                    src="https://picsum.photos/seed/industrialcleaning/1800/600"
-                    alt="Industrial Cleaning Supplies"
+                    src={HERO_SLIDES[activeHeroSlide].imageUrl}
+                    alt={HERO_SLIDES[activeHeroSlide].title}
                     fill
-                    priority
-                    className="object-cover opacity-25 transition-transform duration-1000 group-hover:scale-102"
+                    className="object-cover opacity-30 scale-102 transition-transform duration-[6000ms]"
                     referrerPolicy="no-referrer"
+                    priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/85 to-transparent" />
-                </div>
-                
-                <div className="relative z-10 p-6 md:p-14 max-w-2xl space-y-4">
-                  <span className="inline-block px-3 py-1 bg-orange-500/10 text-orange-400 text-[11px] font-bold tracking-widest uppercase rounded-full border border-orange-500/30">
-                    SÍNDROME DE LIMPIEZA INDUSTRIAL PRO
-                  </span>
-                  <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">
-                    Precios Corporativos del Almacén B2B.
-                  </h2>
-                  <p className="text-sm md:text-base text-neutral-400 max-w-lg">
-                    Agrega químicos alcalinos, absorbentes ecológicos, consumibles de celulosa y EPIs de alta densidad para estimación de cotización automática.
-                  </p>
-                  <div className="pt-2 flex flex-wrap gap-4">
-                    <button 
-                      onClick={() => {
-                        setSelectedCategory('1');
-                        window.scrollTo({ top: 400, behavior: 'smooth' });
-                      }}
-                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-full transition shadow-lg text-xs md:text-sm tracking-wide cursor-pointer"
-                    >
-                      Explorar Químicos
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setSelectedCategory('2');
-                        window.scrollTo({ top: 400, behavior: 'smooth' });
-                      }}
-                      className="bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-bold py-2.5 px-6 rounded-full transition border border-neutral-700 text-xs md:text-sm tracking-wide cursor-pointer"
-                    >
-                      Línea de EPP
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              {/* LISTADO DE CATEGORÍAS EN FORMA DE COMPONENTES DE SELECCIÓN */}
-              <section className="space-y-4">
-                <h3 className="text-base font-extrabold text-neutral-300 uppercase tracking-widest font-mono">Filtrar por Categoría B2B</h3>
-                <div className="flex flex-wrap gap-3">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all text-xs font-bold cursor-pointer ${
-                        (selectedCategory === cat.id)
-                          ? 'bg-orange-500 border-orange-400 text-white shadow-md'
-                          : 'bg-neutral-900 border-neutral-850 text-neutral-400 hover:border-neutral-700 hover:text-white hover:bg-neutral-850'
-                      }`}
-                    >
-                      {cat.icon}
-                      <span>{cat.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              {/* CUADRÍCULA DE EXPOSICIÓN DE PRODUCTOS (GRILLA) */}
-              <section className="space-y-6">
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    {selectedCategory === 'all' ? 'Catálogo Completo' : categories.find(c => c.id === selectedCategory)?.name}
-                    <span className="text-xs font-mono font-normal bg-neutral-900 text-neutral-500 px-2 py-0.5 rounded border border-neutral-800">
-                      {filteredProducts.length} productos
-                    </span>
-                  </h3>
+                  {/* Gradientes Oscuros de Exclusividad */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/50" />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {filteredProducts.map((p) => (
-                    <div 
-                      key={p.id} 
-                      className="bg-neutral-900 border border-neutral-850 rounded-2xl overflow-hidden hover:border-neutral-750 hover:shadow-2xl transition-all duration-300 group flex flex-col h-full relative"
-                      id={`product-card-${p.id}`}
-                    >
-                      
-                      {/* Badge de stock crítico */}
-                      {p.stock < 100 && (
-                        <span className="absolute top-3 left-3 z-10 bg-red-600/90 text-white font-mono text-[9px] font-bold tracking-widest px-2 py-0.5 rounded shadow">
-                          RESTRICCIÓN DE STOCK
-                        </span>
-                      )}
-
-                      {/* Imagen con hover de opacidad */}
-                      <div 
-                        onClick={() => handleSelectProduct(p)}
-                        className="relative aspect-square bg-neutral-950 border-b border-neutral-850 p-6 flex items-center justify-center cursor-pointer overflow-hidden"
-                      >
-                        <Image 
-                          src={p.imageUrl}
-                          alt={p.name}
-                          fill
-                          className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-
-                      {/* Cuerpo de información */}
-                      <div className="p-5 flex flex-col flex-1 space-y-3">
-                        <span className="text-[10px] font-mono font-bold text-orange-500 uppercase tracking-widest">
-                          {p.category}
-                        </span>
-
-                        <h4 
-                          onClick={() => handleSelectProduct(p)}
-                          className="text-base font-bold text-neutral-100 hover:text-orange-400 cursor-pointer line-clamp-2 leading-tight transition-colors min-h-[40px]"
-                        >
-                          {p.name}
-                        </h4>
-
-                        <div className="flex items-center gap-1.5">
-                          <div className="flex text-amber-500 items-center">
-                            <Star size={13} fill="currentColor" />
-                          </div>
-                          <span className="text-xs text-neutral-300 font-bold">{p.rating}</span>
-                          <span className="text-neutral-500 text-xs">| {p.sales} compras</span>
-                        </div>
-
-                        {/* Métrica de Precios (B2B sin detallar porcentajes mas que estéticamente) */}
-                        <div className="pt-2 border-t border-neutral-850/60 mt-auto">
-                          <p className="text-[11px] text-neutral-500 font-mono">PRECIO UNITARIO B2B</p>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-mono text-white font-extrabold tracking-tight">
-                              ${p.finalSalePrice.toFixed(2)}
-                            </span>
-                            <span className="text-[10px] text-neutral-500 uppercase font-bold">MXN</span>
-                          </div>
-                          <p className="text-[10px] text-green-500 font-bold">Llega gratis mañana</p>
-                        </div>
-
-                        {/* Botones de acción rápida */}
-                        <div className="flex flex-col gap-2 pt-2">
-                          <button 
-                            onClick={() => handleSelectProduct(p)}
-                            className="w-full bg-neutral-800 hover:bg-neutral-750 text-neutral-200 font-semibold py-2 rounded-lg text-xs transition border border-neutral-700/60 flex items-center justify-center gap-1.5 cursor-pointer"
-                          >
-                            Ver Detalles (Mercado Libre)
-                          </button>
-                          
-                          <button 
-                            onClick={() => handleStartQuoteProcess(p, 1)}
-                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow hover:shadow-orange-500/20 cursor-pointer"
-                          >
-                            <ShoppingCart size={13} />
-                            Cotizar Ahora
-                          </button>
-                        </div>
-
-                      </div>
-                    </div>
-                  ))}
-
-                  {filteredProducts.length === 0 && (
-                    <div className="col-span-full py-16 text-center text-neutral-500">
-                      <Search className="mx-auto w-10 h-10 text-neutral-600 mb-3" />
-                      <p className="text-sm">No pudimos encontrar productos que coincidan con &quot;{searchTerm}&quot;</p>
-                      <button 
-                        onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }} 
-                        className="text-orange-500 hover:underline text-xs mt-2 font-bold cursor-pointer"
-                      >
-                        Limpiar todos los filtros
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-            </motion.div>
-          ) : (
-            
-            // ==================== DETALLE DE PRODUCTO (ESTILO MERCADO LIBRE) ====================
-            <motion.div 
-              key="detail"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="space-y-8"
-            >
-              
-              {/* Botón Volver y Categorías Migas de Pan */}
-              <div className="flex items-center gap-2 text-sm text-neutral-400">
-                <button 
-                  onClick={() => setSelectedProduct(null)}
-                  className="flex items-center gap-1.5 text-neutral-300 hover:text-white transition font-semibold cursor-pointer"
-                >
-                  <ArrowLeft size={16} /> Volver al catálogo
-                </button>
-                <span>/</span>
-                <span className="text-neutral-500">{selectedProduct.category}</span>
-                <span>/</span>
-                <span className="text-neutral-300 font-mono truncate">{selectedProduct.sku}</span>
-              </div>
-
-              {/* Ficha Principal Mercado Libre Style */}
-              <div className="bg-neutral-900 border border-neutral-850 rounded-3xl p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 shadow-2xl">
-                
-                {/* Lado Izquierdo: Galería de Fotos (8 de 12 para computadoras) */}
-                <div className="col-span-1 lg:col-span-7 flex flex-col md:flex-row gap-5">
-                  {/* Miniaturas a la izquierda */}
-                  <div className="hidden md:flex flex-col gap-3">
-                    {[1, 2, 3].map((num) => (
-                      <div 
-                        key={num} 
-                        className={`w-14 h-14 rounded-xl border p-1 bg-neutral-950 relative cursor-pointer overflow-hidden transition-all duration-200 ${
-                          num === 1 ? 'border-orange-500 ring-1 ring-orange-500' : 'border-neutral-800 hover:border-neutral-700'
-                        }`}
-                      >
-                        <Image 
-                          src={selectedProduct.imageUrl} 
-                          alt="preview" 
-                          fill 
-                          className="object-cover opacity-80"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Imagen Principal de Exposición */}
-                  <div className="flex-1 min-h-[350px] md:min-h-[450px] max-h-[500px] border border-neutral-800 bg-neutral-950 rounded-2xl relative flex items-center justify-center p-8 overflow-hidden group">
-                    <Image 
-                      src={selectedProduct.imageUrl}
-                      alt={selectedProduct.name}
-                      fill
-                      priority
-                      className="object-cover opacity-90 group-hover:scale-105 transition-transform duration-700 pointer-events-none"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-neutral-950/5 pointer-events-none" />
-                    
-                    {/* Tag de Zoom Estético */}
-                    <span className="absolute bottom-4 right-4 bg-black/60 backdrop-blur text-[10px] text-neutral-400 border border-neutral-800 px-3 py-1.5 rounded-full font-mono">
-                      IMAGEN ZOOM-IN AUTOMÁTICO
-                    </span>
-                  </div>
-                </div>
-
-                {/* Lado Derecho: Contenedor Compra Mercado Libre Style (5 de 12) */}
-                <div className="col-span-1 lg:col-span-5 flex flex-col justify-between space-y-6">
+                {/* Contenido Visual y de Venta */}
+                <div className="relative max-w-7xl mx-auto px-6 sm:px-8 md:px-12 w-full z-10 flex flex-col justify-center h-full pt-10">
                   
-                  <div className="space-y-4">
-                    {/* Condicionales Industriales */}
-                    <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono font-medium">
-                      <span>Nuevo B2B</span>
-                      <span>|</span>
-                      <span className="text-orange-400 font-bold">{selectedProduct.sales}+ vendidos corporativos</span>
-                    </div>
+                  <motion.div
+                    key={activeHeroSlide}
+                    initial={{ opacity: 0, y: 25 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="max-w-2xl space-y-4 sm:space-y-6"
+                  >
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/20 text-xs tracking-[0.25em] text-amber-400 font-mono font-semibold uppercase">
+                      <Sparkles size={11} /> Colección Oficial Grado Cero
+                    </span>
 
-                    <h2 className="text-2xl md:text-3xl font-black text-white leading-tight">
-                      {selectedProduct.name}
-                    </h2>
+                    <h1 className="text-4xl sm:text-6xl font-serif font-light text-white tracking-tight leading-none">
+                      {HERO_SLIDES[activeHeroSlide].title}
+                    </h1>
 
-                    {/* Reseñas y Estrellas */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex text-amber-500">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={15} fill={i < Math.floor(selectedProduct.rating) ? "currentColor" : "none"} />
-                        ))}
-                      </div>
-                      <span className="text-xs text-neutral-200 font-bold">{selectedProduct.rating}</span>
-                      <span className="text-neutral-500 text-xs">({Math.floor(selectedProduct.sales / 3)} calificaciones B2B)</span>
-                    </div>
+                    <p className="text-amber-100/90 font-serif text-lg italic tracking-wide">
+                      &quot;{HERO_SLIDES[activeHeroSlide].tagline}&quot;
+                    </p>
 
-                    {/* Precios y Bonficaciones */}
-                    <div className="bg-neutral-950 p-4 rounded-2xl border border-neutral-850 space-y-1">
-                      <span className="text-neutral-400 text-xs font-mono">PRECIO UNITARIO SIN IVA</span>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-mono text-white font-extrabold tracking-tight">
-                          ${selectedProduct.finalSalePrice.toFixed(2)}
-                        </span>
-                        <span className="text-sm text-neutral-400 font-bold uppercase font-mono">MXN</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 pt-1.5 text-xs text-green-400 font-bold">
-                        <Check size={14} /> Envío Gratis en todo México
-                      </div>
-                      <p className="text-[11px] text-neutral-500 pt-1 leading-normal">
-                        * Factura deducible autorizada por el SAT. Descuento Adicional del 10% a partir de 20 unidades.
-                      </p>
-                    </div>
+                    <p className="text-sm text-neutral-400 leading-relaxed max-w-lg font-light">
+                      {HERO_SLIDES[activeHeroSlide].description}
+                    </p>
 
-                    {/* Atributos Clave */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between border-b border-neutral-850 pb-2">
-                        <span className="text-neutral-500">SKU de Almacén</span>
-                        <span className="font-mono text-xs text-neutral-300 font-bold">{selectedProduct.sku}</span>
-                      </div>
-                      <div className="flex justify-between border-b border-neutral-850 pb-2">
-                        <span className="text-neutral-500">Stock Operativo</span>
-                        <span className={`font-semibold ${selectedProduct.stock > 100 ? 'text-green-400' : 'text-amber-500'}`}>
-                          {selectedProduct.stock > 0 ? `${selectedProduct.stock} unidades listas` : 'Sin stock momentáneo'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between border-b border-neutral-850 pb-2">
-                        <span className="text-neutral-500">Despacho</span>
-                        <span className="text-neutral-300">Inmediato (Mismo día)</span>
-                      </div>
+                    <div className="pt-2 flex flex-wrap gap-4">
+                      
+                      <button 
+                        onClick={() => {
+                          const targetProd = products.find(p => p.id === HERO_SLIDES[activeHeroSlide].productId);
+                          if (targetProd) {
+                            setSelectedProduct(targetProd);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }
+                        }}
+                        className="bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-neutral-950 px-8 py-3 rounded-md text-xs uppercase tracking-[0.2em] font-extrabold transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
+                      >
+                        Comprar ahora <ArrowRight size={14} />
+                      </button>
+
+                      <button 
+                        onClick={() => scrollIntoView('grado-cero-brand')}
+                        className="border border-white/10 hover:border-white/30 bg-neutral-900/60 backdrop-blur-sm text-white hover:text-amber-400 px-6 py-3 rounded-md text-xs uppercase tracking-[0.2em] font-bold transition-all cursor-pointer"
+                      >
+                        Ver colección recomendada
+                      </button>
                     </div>
+                  </motion.div>
+
+                </div>
+
+                {/* Controles de Navegación del Carrusel (Estéticos) */}
+                <div className="absolute bottom-8 right-8 z-20 flex gap-2">
+                  {HERO_SLIDES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveHeroSlide(idx)}
+                      className={`w-16 h-1 rounded transition-all duration-500 ${
+                        idx === activeHeroSlide ? 'bg-amber-500' : 'bg-neutral-800'
+                      }`}
+                      title={`Slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+              </div>
+            </section>
+
+            {/* SECCIÓN DE CONFIANZA EN CONVERSIONES (GLASSMORPHISM HORIZONTAL BARS) */}
+            <section className="py-8 bg-neutral-950 text-xs font-mono uppercase tracking-[0.1em]" id="trust-bar">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 gap-y-4">
+                  
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                    <Truck size={18} className="text-amber-400 shrink-0" />
+                    <span className="text-[10px] leading-tight text-neutral-400">Envíos Asegurados <br /><strong className="text-white">a todo México</strong></span>
                   </div>
 
-                  {/* Selector de cantidad y botones de compra con flujo login */}
-                  <div className="space-y-4">
-                    
-                    {/* Panel de cantidad */}
-                    <div className="flex items-center justify-between bg-neutral-950/60 border border-neutral-850 p-3 rounded-2xl">
-                      <span className="text-sm font-semibold text-neutral-400">Cantidad para cotizar:</span>
-                      <select 
-                        defaultValue="10"
-                        id="quote-quantity-select"
-                        className="bg-neutral-900 border border-neutral-700 text-white rounded-lg px-2.5 py-1.5 text-xs font-bold focus:ring-1 focus:ring-orange-500 focus:outline-none"
-                      >
-                        <option value="1">1 Unidad</option>
-                        <option value="5">5 Unidades</option>
-                        <option value="10">10 Unidades (Recomendado)</option>
-                        <option value="20">20 Unidades (-10% Descuento)</option>
-                        <option value="50">50 Unidades (-15% Descuento)</option>
-                        <option value="100">100 Unidades (Fracción de Contenedor)</option>
-                      </select>
-                    </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                    <Shield size={18} className="text-amber-400 shrink-0" />
+                    <span className="text-[10px] leading-tight text-neutral-400">Pagos Seguros <br /><strong className="text-white">Encriptación SSL</strong></span>
+                  </div>
 
-                    {/* Botón de compra / cotización con gatillo de login */}
-                    <div className="space-y-2.5">
-                      <button 
-                        onClick={() => {
-                          const selectEl = document.getElementById('quote-quantity-select') as HTMLSelectElement;
-                          const qty = selectEl ? parseInt(selectEl.value) : 10;
-                          handleStartQuoteProcess(selectedProduct, qty);
-                        }}
-                        className="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-extrabold py-3.5 rounded-2xl transition shadow-lg text-sm tracking-wide flex items-center justify-center gap-2 cursor-pointer"
-                        id="btn-cotizar-ahora"
-                      >
-                        Adquirir / Cotizar Volumen Mayorista
-                      </button>
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                    <Phone size={18} className="text-amber-400 shrink-0" />
+                    <span className="text-[10px] leading-tight text-neutral-400">Atención Directa <br /><strong className="text-white">Personalizada 24/7</strong></span>
+                  </div>
 
-                      <button 
-                        onClick={() => {
-                          const selectEl = document.getElementById('quote-quantity-select') as HTMLSelectElement;
-                          const qty = selectEl ? parseInt(selectEl.value) : 10;
-                          addToCart(selectedProduct, qty);
-                        }}
-                        className="w-full bg-neutral-850 hover:bg-neutral-800 text-neutral-200 font-bold py-3.5 rounded-2xl transition border border-neutral-750 text-sm tracking-wide flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <ShoppingCart size={16} />
-                        Agregar a la cotización activa
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm">
+                    <Sparkles size={18} className="text-amber-400 shrink-0" />
+                    <span className="text-[10px] leading-tight text-neutral-400">Selección Curada <br /><strong className="text-white">Productos Certificados</strong></span>
+                  </div>
 
+                  <div className="col-span-2 md:col-span-4 lg:col-span-1 flex items-center gap-3 p-4 rounded-xl bg-neutral-900/35 border border-white/5 backdrop-blur-sm justify-center lg:justify-start">
+                    <Award size={18} className="text-amber-400 shrink-0" />
+                    <span className="text-[10px] leading-tight text-neutral-400">Garantía Extrema <br /><strong className="text-white">de Satisfacción</strong></span>
                   </div>
 
                 </div>
               </div>
+            </section>
 
-              {/* Ficha Técnica Detallada (Descripciones e ISOs) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* SECCIÓN DESTACADA: COLECCIÓN OFICIAL GRADO CERO (NUESTRO VALOR DOMINANTE) */}
+            <section className="py-20 bg-neutral-950 relative" id="grado-cero-brand">
+              
+              {/* Esferas de luz sutil gótica para el efecto cristal */}
+              <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-amber-500/5 rounded-full filter blur-[100px] pointer-events-none" />
+              <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-neutral-500/5 rounded-full filter blur-[120px] pointer-events-none" />
+
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
                 
-                {/* Características técnicas a la izquierda */}
-                <div className="col-span-1 lg:col-span-8 bg-neutral-900 border border-neutral-850 rounded-3xl p-6 md:p-8 space-y-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-4">Descripción General</h3>
-                    <p className="text-sm text-neutral-400 leading-relaxed whitespaces-pre-line">
-                      {selectedProduct.description}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-4">Ficha Técnica Operativa (B2B)</h3>
-                    <div className="border border-neutral-800 rounded-xl overflow-hidden divide-y divide-neutral-850">
-                      {Object.entries(selectedProduct.specs).map(([key, val]) => (
-                        <div key={key} className="grid grid-cols-1 md:grid-cols-12 text-sm">
-                          <div className="md:col-span-4 bg-neutral-950 p-3.5 text-neutral-400 font-medium font-mono text-xs">
-                            {key}
-                          </div>
-                          <div className="md:col-span-8 p-3.5 text-neutral-100">
-                            {val}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="text-center space-y-3">
+                  <span className="text-xs uppercase tracking-[0.3em] text-amber-500 font-mono font-semibold">Flaghsip Collection</span>
+                  <h2 className="text-3xl sm:text-4xl font-serif font-light tracking-wide text-white">
+                    Colección Oficial Grado Cero
+                  </h2>
+                  <div className="h-[2px] w-16 bg-amber-500/30 mx-auto" />
+                  <p className="text-xs text-neutral-400 max-w-lg mx-auto font-light leading-relaxed">
+                    Formulaciones de ultra-lujo molecular y biocosmética científica de Grado Cero. Diseños atemporales, ingredientes estables de máxima pureza.
+                  </p>
                 </div>
 
-                {/* Tarjeta de Garantía Grado Cero a la derecha */}
-                <div className="col-span-1 lg:col-span-4 bg-neutral-900 border border-neutral-850 rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="w-10 h-10 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                      <Shield size={20} />
-                    </div>
-                    <h4 className="font-bold text-white text-base">Garantía Corporativa de Suministro</h4>
-                    <p className="text-xs text-neutral-400 leading-relaxed">
-                      Todas nuestras compras e importaciones están respaldadas por contratos institucionales de Grado Cero. Si el lote químico o de EPP no satisface las pruebas de laboratorio ISO de su corporación, reemplazamos el material sin costo adicional.
-                    </p>
-                  </div>
-
-                  <div className="border-t border-neutral-800 pt-4 mt-6">
-                    <p className="text-[10px] text-neutral-500 font-mono">CERTIFICADOS HOMOLOGADOS:</p>
-                    <p className="text-xs font-bold text-neutral-300 mt-1">Cofepris, SEMARNAT, ISO 45001, ANSI Z87</p>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* RECOMENDACIÓN DE PRODUCTOS SIMILARES (MERCADO LIBRE STYLE) */}
-              <section className="space-y-6 pt-6">
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                  <h3 className="text-xl font-bold text-white">Quienes vieron este producto también compraron</h3>
-                  <span className="text-xs text-neutral-500">Mapeado en {selectedProduct.category}</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {similarProducts.map((p) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                  {officialProducts.map((p) => (
                     <div 
                       key={p.id}
-                      onClick={() => handleSelectProduct(p)}
-                      className="bg-neutral-900/60 border border-neutral-850 rounded-2xl overflow-hidden hover:border-neutral-700 hover:bg-neutral-900 transition-all duration-300 group cursor-pointer flex flex-col h-full"
+                      className="bg-neutral-900/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-amber-500/20 shadow-2xl transition-all duration-500 group flex flex-col sm:flex-row h-full relative"
                     >
-                      <div className="relative aspect-[4/3] bg-neutral-950 p-4 flex items-center justify-center overflow-hidden">
+                      <div className="sm:w-1/2 aspect-square sm:aspect-auto relative bg-neutral-950 p-6 flex items-center justify-center overflow-hidden">
                         <Image 
                           src={p.imageUrl} 
                           alt={p.name} 
                           fill 
-                          className="object-cover opacity-75 group-hover:scale-105 group-hover:opacity-100 transition-transform duration-500" 
+                          className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-750" 
                           referrerPolicy="no-referrer"
                         />
+                        <div className="absolute inset-0 bg-neutral-950/10 pointer-events-none" />
+                        
+                        {/* Etiqueta de Marca Dominante Oficial */}
+                        <span className="absolute top-3 left-3 bg-gradient-to-r from-amber-500/20 to-amber-700/20 backdrop-blur border border-amber-400/30 text-[9px] font-mono font-bold tracking-widest text-amber-300 px-2.5 py-1 rounded">
+                          ★ GRADO CERO ORIGINAL
+                        </span>
                       </div>
-                      <div className="p-4 flex flex-col flex-1 justify-between space-y-2">
-                        <div>
-                          <p className="text-[10px] font-mono text-neutral-500 uppercase">{p.sku}</p>
-                          <h4 className="text-sm font-bold text-neutral-200 group-hover:text-orange-400 transition-colors line-clamp-1 mt-0.5">
+
+                      <div className="sm:w-1/2 p-6 sm:p-8 flex flex-col justify-between space-y-4">
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-mono text-neutral-500 tracking-wider">SKU: {p.sku}</p>
+                          <h3 className="text-lg sm:text-xl font-serif text-white group-hover:text-amber-300 transition-colors cursor-pointer" onClick={() => setSelectedProduct(p)}>
                             {p.name}
-                          </h4>
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-xs text-amber-500/90 font-mono">
+                            <Star size={11} fill="currentColor" />
+                            <span>{p.rating}</span>
+                            <span className="text-neutral-500 font-normal">({p.reviews} reseñas)</span>
+                          </div>
+                          <p className="text-xs text-neutral-400 font-light leading-relaxed line-clamp-3">
+                            {p.shortDesc}
+                          </p>
                         </div>
-                        <div className="flex items-baseline justify-between pt-1">
-                          <span className="text-base font-mono font-bold text-white">${p.finalSalePrice.toFixed(2)}</span>
-                          <span className="text-[10px] text-green-400 font-bold">Llega gratis</span>
+
+                        <div>
+                          <p className="text-[9px] text-neutral-500 uppercase font-mono tracking-widest">Inversión Exclusiva</p>
+                          <p className="text-2xl font-serif font-light text-white tracking-tight">${p.price.toLocaleString('es-MX')} <span className="text-xs text-neutral-400 font-sans font-medium">MXN</span></p>
+                          
+                          <div className="mt-4 flex gap-2">
+                            <button 
+                              onClick={() => { setSelectedProduct(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                              className="flex-1 bg-amber-500 hover:bg-amber-600 text-neutral-950 font-bold py-2.5 rounded text-xs uppercase tracking-widest transition cursor-pointer text-center"
+                            >
+                              Comprar
+                            </button>
+                            <button 
+                              onClick={() => handleBuyOnWhatsApp(p)}
+                              className="p-2.5 bg-neutral-950 hover:bg-neutral-850 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 rounded transition cursor-pointer"
+                              title="Consultar por WhatsApp"
+                            >
+                              <Phone size={14} className="fill-emerald-400" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
-                  
-                  {similarProducts.length === 0 && (
-                    <div className="col-span-full text-center py-6 text-neutral-500 text-xs italic">
-                      No hay productos similares en stock actualmente.
-                    </div>
-                  )}
                 </div>
-              </section>
 
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-      </main>
-
-      {/* PORTAL DE AUTENTICACIÓN STEP-BY-STEP (ESTILO MERCADO LIBRE) */}
-      <AnimatePresence>
-        {isAuthModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            
-            {/* Fondo translúcido */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                if (!isAuthLoading) setIsAuthModalOpen(false);
-              }}
-              className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm"
-              id="auth-modal-overlay"
-            />
-
-            {/* Contenedor de la Tarjeta */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl z-10"
-              id="auth-modal-card"
-            >
-              
-              {/* Encabezado del Modal */}
-              <div className="px-6 pt-6 flex justify-between items-center border-b border-neutral-850 pb-3 bg-neutral-950/40">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-widest">PASARELA DE COTIZACIÓN B2B</span>
-                </div>
-                {!isAuthLoading && (
-                  <button 
-                    onClick={() => setIsAuthModalOpen(false)}
-                    className="p-1 rounded-lg hover:bg-neutral-800 transition text-neutral-400 hover:text-white"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
               </div>
+            </section>
 
-              {/* Cuerpo Dinámico de Navegación del Login */}
-              <div className="p-6 md:p-8 space-y-6">
-
-                {authStep === 'email' && (
-                  <div className="space-y-4">
-                    <div className="space-y-1.5 text-center">
-                      <h4 className="text-xl font-bold text-white">Ingresa tu correo para continuar</h4>
-                      <p className="text-xs text-neutral-400">Verificaremos tu cuenta u oficinas corporativas para cotizar.</p>
-                    </div>
-
-                    <form onSubmit={handleEmailSubmit} className="space-y-3.5">
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400 font-semibold uppercase tracking-wider font-mono">E-mail Corporativo o Privado</label>
-                        <div className="relative">
-                          <input 
-                            type="email" 
-                            required
-                            placeholder="ejemplo@empresa.com"
-                            value={authEmail}
-                            onChange={(e) => setAuthEmail(e.target.value)}
-                            disabled={isAuthLoading}
-                            id="input-auth-email"
-                            className="w-full bg-neutral-950 text-neutral-100 border border-neutral-800 rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-all text-sm font-medium"
-                          />
-                          <Mail className="absolute left-4 top-3.5 text-neutral-500 w-4.5 h-4.5" />
-                        </div>
-                      </div>
-
-                      {authError && (
-                        <p className="text-xs text-red-500 font-bold bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">{authError}</p>
-                      )}
-
-                      <button 
-                        type="submit" 
-                        disabled={isAuthLoading}
-                        id="btn-auth-email-continue"
-                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
-                      >
-                        {isAuthLoading ? <Loader2 size={16} className="animate-spin" /> : 'Continuar con Email'}
-                      </button>
-                    </form>
-
-                    {/* Divisora de Mercado Libre */}
-                    <div className="relative flex py-2 items-center">
-                      <div className="flex-grow border-t border-neutral-800"></div>
-                      <span className="flex-shrink mx-4 text-xs font-mono uppercase text-neutral-500">¿Tienes otros accesos?</span>
-                      <div className="flex-grow border-t border-neutral-800"></div>
-                    </div>
-
-                    {/* Accesos Rápidos de SSO */}
-                    <div className="space-y-2.5">
-                      <button 
-                        onClick={handleGoogleAuthInit}
-                        className="w-full bg-[#131314] hover:bg-[#1f1f20] text-[#e3e3e3] font-bold py-3 px-4 rounded-xl border border-neutral-800 transition flex items-center justify-center gap-2.5 cursor-pointer text-sm"
-                        id="btn-auth-google"
-                      >
-                        {/* Vector del Logotipo de Google */}
-                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                          <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.85 2.99C6.14 7.42 8.84 5.04 12 5.04z"/>
-                          <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.43c-.28 1.44-1.09 2.66-2.32 3.49l3.61 2.8c2.12-1.95 3.77-5.14 3.77-8.44z"/>
-                          <path fill="#FBBC05" d="M5.24 10.55c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.39 3.98C.5 5.78 0 7.83 0 10c0 2.17.5 4.22 1.39 6.02l3.85-3.47z"/>
-                          <path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.91l-3.61-2.8c-1.2.8-2.73 1.28-4.35 1.28-3.16 0-5.86-2.38-6.16-5.51l-3.85 2.99C3.37 20.33 7.35 23 12 23z"/>
-                        </svg>
-                        Iniciar con Google
-                      </button>
-
-                      <button 
-                        onClick={handlePhoneAuthInit}
-                        className="w-full bg-neutral-950 hover:bg-neutral-850 text-neutral-300 font-bold py-3 px-4 rounded-xl border border-neutral-800 transition flex items-center justify-center gap-2.5 cursor-pointer text-sm"
-                        id="btn-auth-phone"
-                      >
-                        <Phone size={15} className="text-orange-500 fill-orange-500" />
-                        Ingresar con número celular
-                      </button>
-                    </div>
-
-                    <p className="text-[10px] text-center text-neutral-500 leading-normal">
-                      Al continuar, aceptas la creación de un perfil de cotización B2B operado bajo las normas de confidencialidad SAT y protección de datos Grado Cero.
+            {/* SECCIÓN CATÁLOG: INICIO DE FABRICANTES ALIADOS & BUSQUEDA INTEGRADORA */}
+            <section className="py-20 bg-neutral-950 border-t border-white/5 relative" id="allied-catalog">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+                
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
+                  <div className="space-y-3">
+                    <span className="text-xs uppercase tracking-[0.3em] text-neutral-500 font-mono">Complementaria de Alta Gama</span>
+                    <h2 className="text-3xl font-serif font-light text-white">
+                      Colección de Fabricantes Aliados y Alternativos
+                    </h2>
+                    <p className="text-xs text-neutral-400 max-w-xl font-light">
+                      Amplía el ticket promedio de tu tocador corporativo o personal con marcas de fabricantes independientes seleccionados con rigurosa afinidad estética y de efectividad.
                     </p>
                   </div>
-                )}
 
-                {authStep === 'password' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setAuthStep('email')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400">
-                        <ArrowLeft size={16} />
-                      </button>
-                      <div>
-                        <h4 className="font-bold text-white text-base">Ingresa tu contraseña</h4>
-                        <p className="text-xs text-neutral-400">{authEmail}</p>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs text-neutral-400 font-semibold font-mono">Contraseña B2B</label>
-                          <a href="#" className="text-[10px] text-orange-500 hover:underline">¿La olvidaste?</a>
-                        </div>
-                        <div className="relative">
-                          <input 
-                            type="password" 
-                            required
-                            autoFocus
-                            placeholder="Ingrese su clave secreta"
-                            value={authPassword}
-                            onChange={(e) => setAuthPassword(e.target.value)}
-                            disabled={isAuthLoading}
-                            id="input-auth-password"
-                            className="w-full bg-neutral-950 text-white border border-neutral-800 rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-1 focus:ring-orange-500 text-sm font-medium"
-                          />
-                          <Lock className="absolute left-4 top-3.5 text-neutral-500 w-4.5 h-4.5" />
-                        </div>
-                      </div>
-
-                      {authError && (
-                        <p className="text-xs text-red-500 font-bold bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">{authError}</p>
-                      )}
-
-                      <button 
-                        type="submit" 
-                        disabled={isAuthLoading}
-                        id="btn-auth-password-continue"
-                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
-                      >
-                        {isAuthLoading ? <Loader2 size={16} className="animate-spin" /> : 'Acceder'}
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {authStep === 'register' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setAuthStep('email')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400">
-                        <ArrowLeft size={16} />
-                      </button>
-                      <div>
-                        <h4 className="font-bold text-white text-base font-sans">Crear cuenta corporativa</h4>
-                        <p className="text-xs text-neutral-400">{authEmail}</p>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleRegisterSubmit} className="space-y-3">
-                      
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider font-mono">Nombre Completo</label>
-                        <input 
-                          type="text" 
-                          required
-                          placeholder="Juan Pérez"
-                          value={authName}
-                          onChange={(e) => setAuthName(e.target.value)}
-                          className="w-full bg-neutral-950 text-white border border-neutral-800 rounded-xl py-2 px-3 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider font-mono">Nombre de la Empresa o Razón Social</label>
-                        <input 
-                          type="text" 
-                          required
-                          placeholder="Industrias Químicas S.A. de C.V."
-                          value={authCompanyName}
-                          onChange={(e) => setAuthCompanyName(e.target.value)}
-                          className="w-full bg-neutral-950 text-white border border-neutral-800 rounded-xl py-2 px-3 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider font-mono">Teléfono de Oficina/Celular</label>
-                        <input 
-                          type="tel" 
-                          placeholder="+52 55 1234 5678"
-                          value={authPhone}
-                          onChange={(e) => setAuthPhone(e.target.value)}
-                          className="w-full bg-neutral-950 text-white border border-neutral-800 rounded-xl py-2 px-3 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider font-mono">Contraseña de Acceso</label>
-                        <input 
-                          type="password" 
-                          required
-                          placeholder="Mínimo 4 caracteres"
-                          value={authPassword}
-                          onChange={(e) => setAuthPassword(e.target.value)}
-                          className="w-full bg-neutral-950 text-white border border-neutral-800 rounded-xl py-2 px-3 text-xs"
-                        />
-                      </div>
-
-                      {authError && (
-                        <p className="text-xs text-red-500 font-bold bg-red-500/10 p-2.5 rounded-lg">{authError}</p>
-                      )}
-
-                      <button 
-                        type="submit" 
-                        disabled={isAuthLoading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 font-bold py-2.5 rounded-xl transition text-white mt-2 cursor-pointer text-xs"
-                      >
-                        {isAuthLoading ? <Loader2 size={15} className="animate-spin" /> : 'Registrar y Autenticar'}
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {/* POPUP SIMULADO DE CUENTAS DE GOOGLE (MERCADO LIBRE SINGLE SIGN ON) */}
-                {authStep === 'google_picker' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 border-b border-neutral-850 pb-3">
-                      <button onClick={() => setAuthStep('email')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400">
-                        <ArrowLeft size={16} />
-                      </button>
-                      <h4 className="font-bold text-white text-base">Acceder con Google</h4>
-                    </div>
-
-                    <div className="bg-neutral-950 border border-neutral-850 rounded-2xl p-4 space-y-3.5">
-                      <div className="text-center pb-2">
-                        {/* Logotipo estético de Google */}
-                        <div className="w-10 h-10 bg-white rounded-full mx-auto flex items-center justify-center shadow">
-                          <svg className="w-5 h-5" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                          </svg>
-                        </div>
-                        <p className="text-xs font-semibold text-neutral-300 mt-2">Selecciona una cuenta para Grado Cero</p>
-                      </div>
-
-                      <div className="space-y-2 max-h-[180px] overflow-y-auto">
-                        
-                        {/* Opción 1: Cuenta del programador de los metadatos de AI Studio! */}
-                        <button 
-                          onClick={() => selectGoogleAccount('alexis88261@gmail.com', 'Alexis')}
-                          className="w-full bg-neutral-900 hover:bg-neutral-850 p-2 text-left rounded-xl border border-neutral-800 hover:border-neutral-700 transition flex items-center gap-3 cursor-pointer"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs uppercase">
-                            AL
-                          </div>
-                          <div className="truncate flex-1">
-                            <h5 className="text-xs font-bold text-white truncate">Alexis</h5>
-                            <p className="text-[10px] text-neutral-400 truncate">alexis88261@gmail.com</p>
-                          </div>
-                          <span className="text-[9px] font-mono text-orange-500 font-bold uppercase shrink-0">TU CUENTA</span>
-                        </button>
-
-                        {/* Opción 2: Cuenta General demo */}
-                        <button 
-                          onClick={() => selectGoogleAccount('ceo@industriaomega.com', 'Carlos Mendoza')}
-                          className="w-full bg-neutral-900/60 hover:bg-neutral-850 p-2 text-left rounded-xl border border-neutral-800 hover:border-neutral-700 transition flex items-center gap-3 cursor-pointer"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs uppercase">
-                            CM
-                          </div>
-                          <div className="truncate flex-1">
-                            <h5 className="text-xs font-bold text-white truncate">Carlos Mendoza</h5>
-                            <p className="text-[10px] text-neutral-400 truncate">ceo@industriaomega.com</p>
-                          </div>
-                        </button>
-
-                      </div>
-
-                      <button 
-                        onClick={() => {
-                          const customEmail = prompt("Ingresa otra dirección de Google:");
-                          if (customEmail && customEmail.includes('@')) {
-                            selectGoogleAccount(customEmail, customEmail.split('@')[0]);
-                          }
-                        }}
-                        className="w-full py-1 text-center text-xs text-neutral-500 hover:text-orange-400 transition cursor-pointer font-bold block"
-                      >
-                        Utilizar otra cuenta de Google
-                      </button>
-
-                    </div>
-
-                    {isAuthLoading && (
-                      <div className="flex items-center justify-center gap-2 text-xs text-orange-500 font-bold">
-                        <Loader2 size={14} className="animate-spin" />
-                        Conectando con servidores de Google...
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ACCESO POR CELULAR - INGRESO DE TELÉFONO */}
-                {authStep === 'phone_number' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setAuthStep('email')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400">
-                        <ArrowLeft size={16} />
-                      </button>
-                      <h4 className="font-bold text-white text-base">Acceder con Celular</h4>
-                    </div>
-
-                    <form onSubmit={handlePhoneSubmit} className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400 font-semibold font-mono">Número Móvil</label>
-                        <div className="flex gap-2">
-                          <select 
-                            defaultValue="+52"
-                            className="bg-neutral-950 border border-neutral-800 text-white text-xs rounded-xl px-2 focus:ring-1 focus:ring-orange-500 focus:outline-none font-bold"
-                          >
-                            <option value="+52">🇲🇽 +52</option>
-                            <option value="+1">🇺🇸 +1</option>
-                            <option value="+54">🇦🇷 +54</option>
-                            <option value="+56">🇨🇱 +56</option>
-                          </select>
-                          <input 
-                            type="tel" 
-                            required
-                            placeholder="55 1234 5678"
-                            value={authPhone}
-                            onChange={(e) => setAuthPhone(e.target.value)}
-                            disabled={isAuthLoading}
-                            id="input-auth-phone-num"
-                            className="flex-1 bg-neutral-950 text-white border border-neutral-800 rounded-xl py-3 px-4 focus:outline-none focus:ring-1 focus:ring-orange-500 text-sm font-medium"
-                          />
-                        </div>
-                      </div>
-
-                      {authError && (
-                        <p className="text-xs text-red-500 font-bold bg-red-500/10 p-2.5 rounded-lg">{authError}</p>
-                      )}
-
-                      <button 
-                        type="submit" 
-                        disabled={isAuthLoading}
-                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
-                      >
-                        {isAuthLoading ? <Loader2 size={16} className="animate-spin" /> : 'Enviar Código SMS'}
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {/* ACCESO POR CELULAR - VERIFICAR CÓDIGO SMS */}
-                {authStep === 'phone_verify' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setAuthStep('phone_number')} className="p-1 hover:bg-neutral-800 rounded text-neutral-400">
-                        <ArrowLeft size={16} />
-                      </button>
-                      <div>
-                        <h4 className="font-bold text-white text-base">Verificación SMS</h4>
-                        <p className="text-xs text-neutral-400">Enviamos un SMS con un código de 6 dígitos al {authPhone}</p>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handlePhoneVerifySubmit} className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs text-neutral-400 font-semibold font-mono tracking-wider uppercase">Ingresa el código (Prueba: 123456)</label>
-                        <input 
-                          type="text" 
-                          required
-                          maxLength={6}
-                          autoFocus
-                          placeholder="0 0 0 0 0 0"
-                          value={smsCode}
-                          onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, ''))}
-                          disabled={isAuthLoading}
-                          id="input-sms-code"
-                          className="w-full bg-neutral-950 text-center tracking-[12px] text-lg font-bold text-white border border-neutral-800 rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono"
-                        />
-                      </div>
-
-                      {authError && (
-                        <p className="text-[11px] text-red-500 font-bold bg-red-500/10 p-2 rounded-lg">{authError}</p>
-                      )}
-
-                      <button 
-                        type="submit" 
-                        disabled={isAuthLoading}
-                        id="btn-verify-sms-code"
-                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
-                      >
-                        {isAuthLoading ? <Loader2 size={16} className="animate-spin" /> : 'Confirmar e Ingresar'}
-                      </button>
-
-                      <div className="text-center pt-2">
-                        {smsCountdown > 0 ? (
-                          <p className="text-xs text-neutral-500 font-mono">Reenviar SMS en {smsCountdown}s</p>
-                        ) : (
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setSmsCountdown(60);
-                              alert("SMS código enviado nuevamente en modo simulación.");
-                            }}
-                            className="text-xs text-orange-400 hover:underline font-bold"
-                          >
-                            Reenviar código de verificación SMS
-                          </button>
-                        )}
-                      </div>
-                    </form>
-                  </div>
-                )}
-
-                {/* ANIMACIÓN DE ACCESO CON LOGRO EXITOSO */}
-                {authStep === 'success' && (
-                  <div className="py-6 text-center space-y-4 flex flex-col items-center">
-                    <motion.div 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1, rotate: 360 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                      className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center border border-green-500/40"
+                  {/* Accionador de Filtros Rápidos */}
+                  <div className="bg-neutral-900/40 border border-white/5 p-2 rounded-lg flex gap-2 text-[10px] font-mono">
+                    <button 
+                      onClick={() => setBrandFilter('all')} 
+                      className={`px-3 py-1.5 rounded transition ${brandFilter === 'all' ? 'bg-amber-500 text-black font-extrabold' : 'text-neutral-400'}`}
                     >
-                      <Check size={32} />
-                    </motion.div>
+                      Todos ({products.length})
+                    </button>
+                    <button 
+                      onClick={() => setBrandFilter('official')} 
+                      className={`px-3 py-1.5 rounded transition ${brandFilter === 'official' ? 'bg-amber-500 text-black font-extrabold' : 'text-neutral-400'}`}
+                    >
+                      Grado Cero ({officialProducts.length})
+                    </button>
+                    <button 
+                      onClick={() => setBrandFilter('allies')} 
+                      className={`px-3 py-1.5 rounded transition ${brandFilter === 'allies' ? 'bg-amber-500 text-black font-extrabold' : 'text-neutral-400'}`}
+                    >
+                      Aliados ({alliedProducts.length})
+                    </button>
+                  </div>
+                </div>
 
-                    <div className="space-y-1">
-                      <h4 className="text-lg font-bold text-white">¡Autenticación B2B Exitosa!</h4>
-                      <p className="text-xs text-green-400 font-bold">Bienvenido de vuelta, {currentUser?.name}.</p>
-                      <p className="text-xs text-neutral-400 font-mono pt-1">Organización: {currentUser?.companyName}</p>
+                {/* FILTROS INTERACTIVOS LATERALES Y CUADRÍCULA */}
+                <div className="flex flex-col lg:flex-row gap-8">
+                  
+                  {/* Panel de Filtros a la Izquierda (Glassmorphism de Rigor) */}
+                  <aside className="w-full lg:w-64 space-y-6 shrink-0 bg-neutral-900/25 border border-white/5 rounded-xl p-5 backdrop-blur-sm self-start">
+                    <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+                      <Filter size={14} className="text-amber-500" />
+                      <h3 className="text-xs uppercase tracking-[0.2em] font-mono text-white font-bold">Filtro de Catálogo</h3>
                     </div>
 
-                    <div className="bg-neutral-950 p-3 rounded-xl max-w-xs border border-neutral-850 text-left space-y-1.5 w-full">
-                      <p className="text-[10px] text-neutral-500 font-mono">ACCESO CONFIRMADO:</p>
-                      <p className="text-xs text-neutral-300 font-semibold truncate flex items-center gap-1">
-                        <Users size={12} className="text-orange-500 shrink-0" /> {currentUser?.email}
-                      </p>
+                    {/* Categorías */}
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-mono uppercase text-neutral-400 font-bold">Categorías</h4>
+                      <div className="flex flex-col gap-1">
+                        {CATEGORIES.map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => setSelectedCategory(cat.id)}
+                            className={`text-left text-xs py-1.5 px-3 rounded-md transition-all flex items-center justify-between ${
+                              selectedCategory === cat.id 
+                                ? 'bg-white/5 text-amber-400 font-semibold border-l-2 border-amber-500' 
+                                : 'text-neutral-400 hover:text-white'
+                            }`}
+                          >
+                            <span>{cat.name}</span>
+                            <ChevronRight size={10} className="opacity-40" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Rangos de Precio */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-[10px] font-mono uppercase text-neutral-400 font-bold">Precio Máximo</h4>
+                        <span className="text-xs font-mono text-amber-500">${priceMax} MXN</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min={500}
+                        max={4000}
+                        step={100}
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(parseInt(e.target.value))}
+                        className="w-full accent-amber-500 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
+                        <span>$500 MXN</span>
+                        <span>$4,000 MXN</span>
+                      </div>
+                    </div>
+
+                    {/* Buscador de Producto */}
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-mono uppercase text-neutral-400 font-bold">Buscar por texto</h4>
+                      <input 
+                        type="text" 
+                        placeholder="ej: Absoluto, carbón..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-neutral-950 text-xs text-neutral-200 border border-white/5 p-2 rounded-md focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+
+                    {/* Reset de todos los Filtros */}
+                    <button 
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory('all');
+                        setBrandFilter('all');
+                        setPriceMax(4000);
+                      }}
+                      className="w-full py-2 bg-neutral-950 hover:bg-neutral-900 border border-white/5 hover:border-white/10 rounded text-[10px] uppercase font-mono tracking-wider font-semibold transition"
+                    >
+                      Limpiar Filtros
+                    </button>
+                  </aside>
+
+                  {/* Cuadrícula de Exposición de Productos */}
+                  <div className="flex-1 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {filteredProducts.map((p) => (
+                        <div 
+                          key={p.id}
+                          className="bg-neutral-900/35 border border-white/5 hover:border-amber-500/20 hover:bg-neutral-900/50 rounded-xl overflow-hidden shadow-xl transition-all duration-300 group flex flex-col h-full relative"
+                        >
+                          
+                          {/* Badge Identificativo */}
+                          <div className="absolute top-3 left-3 z-10">
+                            {p.isOfficial ? (
+                              <span className="bg-amber-500/10 backdrop-blur-md border border-amber-500/35 text-[8px] font-mono font-bold tracking-widest text-amber-400 px-2.5 py-0.5 rounded">
+                                ⭐ ORIGINAL GRADO CERO
+                              </span>
+                            ) : (
+                              <span className="bg-neutral-800/60 backdrop-blur-md border border-white/10 text-[8px] font-mono tracking-widest text-neutral-300 px-2.5 py-0.5 rounded">
+                                🤝 FABRICANTE ALIADO ({p.brand})
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Imagen con Reflejo */}
+                          <div 
+                            onClick={() => { setSelectedProduct(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            className="aspect-square bg-neutral-950 p-6 flex items-center justify-center relative cursor-pointer overflow-hidden border-b border-white/5"
+                          >
+                            <Image 
+                              src={p.imageUrl} 
+                              alt={p.name} 
+                              fill 
+                              className="object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="absolute inset-0 bg-neutral-900/5 pointer-events-none" />
+                          </div>
+
+                          {/* Contenido Comercial */}
+                          <div className="p-4 flex flex-col justify-between flex-1 space-y-3">
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-mono text-neutral-500 uppercase">{p.category}</p>
+                              <h4 
+                                onClick={() => { setSelectedProduct(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                className="text-sm font-serif text-neutral-100 group-hover:text-amber-400 transition-colors line-clamp-1 cursor-pointer leading-tight font-medium"
+                              >
+                                {p.name}
+                              </h4>
+                              <p className="text-[11px] text-neutral-400 font-light leading-relaxed line-clamp-2">
+                                {p.shortDesc}
+                              </p>
+                            </div>
+
+                            <div className="pt-2 border-t border-white/5 flex items-end justify-between">
+                              <div>
+                                <p className="text-[8px] text-neutral-500 font-mono tracking-widest">PRECIO INVERSIÓN</p>
+                                <p className="text-base font-serif font-light text-white">${p.price.toLocaleString('es-MX')} <span className="text-[9px] font-sans font-normal text-neutral-400">MXN</span></p>
+                              </div>
+
+                              <button 
+                                onClick={() => handleAddToCart(p, 1)}
+                                className="bg-neutral-950 hover:bg-white hover:text-black hover:border-white border border-white/10 transition-colors text-[9px] uppercase tracking-widest font-mono font-black py-2 px-3 rounded cursor-pointer"
+                              >
+                                Añadir
+                              </button>
+                            </div>
+                          </div>
+
+                        </div>
+                      ))}
+
+                      {filteredProducts.length === 0 && (
+                        <div className="col-span-full py-16 text-center text-neutral-500 space-y-3">
+                          <Search className="mx-auto w-10 h-10 text-neutral-700" />
+                          <p className="text-sm">No encontramos productos con los filtros seleccionados.</p>
+                          <button 
+                            onClick={() => {
+                              setSearchTerm('');
+                              setSelectedCategory('all');
+                              setBrandFilter('all');
+                              setPriceMax(4000);
+                            }}
+                            className="text-amber-500 hover:underline text-xs tracking-wider uppercase font-mono"
+                          >
+                            Restablecer búsqueda
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
+
+                </div>
 
               </div>
-            </motion.div>
-          </div>
+            </section>
+
+          </motion.div>
+        ) : (
+          
+          // ==================== FICHA DETALLE SIMPLE / COMPREHENSIVE VIEW (GLASSMORPHISM EXTRACT) ====================
+          <motion.div 
+            key="product-detail"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12"
+          >
+            {/* Migas de Pan y Botón de Retorno */}
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-neutral-400">
+              <button 
+                onClick={() => setSelectedProduct(null)}
+                className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer text-white font-bold"
+              >
+                <ArrowLeft size={14} /> Volver al catálogo
+              </button>
+              <span>/</span>
+              <span className="text-neutral-600">{selectedProduct.category}</span>
+              <span>/</span>
+              <span className="text-neutral-400 font-mono truncate">{selectedProduct.sku}</span>
+            </div>
+
+            {/* Contenedor Escombroso de la Ficha */}
+            <div className="bg-neutral-900/40 border border-white/5 backdrop-blur-md rounded-2xl p-6 md:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 shadow-2xl">
+              
+              {/* Bloque Izquierdo: Galería de Fotos (Fusión Múltiples Ángulos) */}
+              <div className="lg:col-span-6 space-y-4 flex flex-col md:flex-row gap-4">
+                
+                {/* Miniaturas a la izquierda en computadoras */}
+                <div className="flex md:flex-col gap-3 shrink-0 order-2 md:order-1">
+                  {selectedProduct.allImages.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImageIndex(i)}
+                      className={`w-14 h-14 rounded-lg bg-neutral-950 p-1 border relative overflow-hidden transition-all ${
+                        activeImageIndex === i ? 'border-amber-500 ring-1 ring-amber-500/40' : 'border-white/5 hover:border-white/15'
+                      }`}
+                    >
+                      <Image 
+                        src={img} 
+                        alt={`Ángulo ${i + 1}`} 
+                        fill 
+                        className="object-cover opacity-80" 
+                        referrerPolicy="no-referrer"
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Gran Imagen de Exposición */}
+                <div className="flex-1 aspect-[4/5] bg-neutral-950 border border-white/5 rounded-xl relative overflow-hidden flex items-center justify-center p-8 order-1 md:order-2">
+                  <Image 
+                    src={selectedProduct.allImages[activeImageIndex]}
+                    alt={selectedProduct.name}
+                    fill
+                    priority
+                    className="object-cover opacity-80 hover:scale-102 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/5 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Bloque Derecho: Conversión y Argumento Comercial */}
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
+                
+                <div className="space-y-4">
+                  
+                  {/* Badge de Pureza / Alianza */}
+                  <div>
+                    {selectedProduct.isOfficial ? (
+                      <span className="inline-block bg-amber-500/10 border border-amber-500/30 text-[9px] font-mono font-bold tracking-widest text-amber-400 px-3 py-1 rounded">
+                        ★ PRODUCTO OFICIAL GRADO CERO
+                      </span>
+                    ) : (
+                      <span className="inline-block bg-neutral-800/60 border border-white/10 text-[9px] font-mono tracking-widest text-neutral-300 px-3 py-1 rounded">
+                        🤝 FABRICANTE ALIADO ({selectedProduct.brand})
+                      </span>
+                    )}
+                  </div>
+
+                  <h1 className="text-3xl sm:text-4xl font-serif text-white tracking-wide leading-tight">
+                    {selectedProduct.name}
+                  </h1>
+
+                  {/* Reseñas */}
+                  <div className="flex items-center gap-1.5 text-xs text-neutral-300 font-mono">
+                    <div className="flex text-amber-400 items-center">
+                      {[...Array(5)].map((_, idx) => (
+                        <Star key={idx} size={13} fill={idx < Math.floor(selectedProduct.rating) ? 'currentColor' : 'none'} className="shrink-0" />
+                      ))}
+                    </div>
+                    <span>{selectedProduct.rating}</span>
+                    <span className="text-neutral-600">({selectedProduct.reviews} reseñas corporativas)</span>
+                  </div>
+
+                  {/* Precios sin rodeos */}
+                  <div className="bg-neutral-950 p-5 rounded-xl border border-white/5 space-y-1">
+                    <p className="text-[10px] text-neutral-500 font-mono tracking-widest uppercase">Precio Oficial de Suministro</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-serif text-white font-light tracking-tight">
+                        ${selectedProduct.price.toLocaleString('es-MX')}
+                      </span>
+                      <span className="text-xs text-neutral-400 font-mono uppercase">MXN / NETO</span>
+                    </div>
+                    <p className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 pt-1.5 font-bold">
+                      <Check size={12} className="stroke-[2.5]" /> {selectedProduct.availability} • Envío express gratuito
+                    </p>
+                  </div>
+
+                  {/* Argumentación Comercial */}
+                  <div className="space-y-2">
+                    <h3 className="text-xs uppercase tracking-widest font-mono text-neutral-400 font-bold">Descripción</h3>
+                    <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed whitespace-pre-wrap">
+                      {selectedProduct.longDesc}
+                    </p>
+                  </div>
+
+                </div>
+
+                {/* ACCIONES DE COMPRA PARA CONVERSIÓN EXTREMA */}
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                  
+                  {/* BOTÓN PRIMARIO DE COMPRA WHATSAPP (Estrategia Central) */}
+                  <button 
+                    onClick={() => handleBuyOnWhatsApp(selectedProduct)}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-extrabold py-3.5 rounded-xl transition-all duration-300 text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/15"
+                  >
+                    <Phone size={15} className="fill-white" /> Comprar por WhatsApp
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    
+                    {/* Botón Añadir a Carrito con pasarela */}
+                    <button 
+                      onClick={() => handleAddToCart(selectedProduct, 1)}
+                      className="bg-neutral-900 border border-white/10 hover:border-white/20 text-neutral-300 hover:text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition cursor-pointer"
+                    >
+                      Añadir al carrito
+                    </button>
+
+                    {/* Botón de Mayoreo Secundario */}
+                    <button 
+                      onClick={() => { setWholesaleProduct(selectedProduct); setWholesaleModalOpen(true); }}
+                      className="bg-neutral-950 hover:bg-neutral-900 border border-amber-500/20 hover:border-amber-500/40 text-amber-500 font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition cursor-pointer"
+                    >
+                      Opción Mayoreo
+                    </button>
+
+                  </div>
+
+                  <p className="text-center text-[10px] text-neutral-500 font-mono leading-relaxed">
+                    ¿Requieres embalaje personalizado, mayoreo para boutiques o amenidades hoteleras? Conversa de inmediato con nuestro especialista de suministro o solicita presupuesto.
+                  </p>
+
+                </div>
+
+              </div>
+            </div>
+
+            {/* TABLA DE ESPECIFICACIONES TÉCNICAS */}
+            <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-6 md:p-8 space-y-6">
+              <h3 className="text-lg font-serif text-white flex items-center gap-2">
+                <Info size={16} className="text-amber-500" /> Ficha Técnica y Composición Química
+              </h3>
+
+              <div className="border border-white/5 rounded-xl overflow-hidden divide-y divide-white/5 font-light text-xs sm:text-sm">
+                {Object.entries(selectedProduct.specs).map(([key, val]) => (
+                  <div key={key} className="grid grid-cols-1 md:grid-cols-12">
+                    <div className="md:col-span-4 bg-neutral-950 p-4 font-mono text-[10px] uppercase text-neutral-400 font-bold tracking-wider">
+                      {key}
+                    </div>
+                    <div className="md:col-span-8 p-4 text-neutral-200">
+                      {val}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PRODUCTOS RELACIONADOS RECOMENDADOS (COMPLEMENTARIOS) */}
+            <section className="space-y-6 border-t border-white/5 pt-12">
+              <h3 className="text-xl font-serif text-white">Quienes exploraron esta pieza también adquirieron</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {products.filter(p => p.id !== selectedProduct.id).slice(0, 4).map((p) => (
+                  <div 
+                    key={p.id}
+                    onClick={() => { setSelectedProduct(p); setActiveImageIndex(0); }}
+                    className="bg-neutral-900/40 border border-white/5 rounded-xl overflow-hidden hover:border-amber-500/25 transition cursor-pointer group flex flex-col justify-between"
+                  >
+                    <div className="aspect-[4/3] relative bg-neutral-950 overflow-hidden">
+                      <Image src={p.imageUrl} alt={p.name} fill className="object-cover opacity-75 group-hover:scale-103 group-hover:opacity-100 transition-all duration-300" referrerPolicy="no-referrer" />
+                    </div>
+                    <div className="p-4 space-y-1">
+                      <p className="text-[8px] font-mono text-neutral-500 uppercase">{p.category}</p>
+                      <h4 className="text-xs font-serif text-white group-hover:text-amber-400 transition-colors truncate">{p.name}</h4>
+                      <p className="text-xs font-mono text-amber-500">${p.price.toLocaleString('es-MX')} MXN</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* CAJÓN LATERAL DEL DETALLE DE CARRITO / CONTROL DE COTIZACIONES */}
+      {/* --- CARRITO / ESTIMADOR EN TIEMPO REAL (SLIDE OVER DRAWER) --- */}
       <AnimatePresence>
         {isCartOpen && (
           <div className="fixed inset-0 z-50 overflow-hidden">
             
-            {/* Overlay translúcido de fondo */}
+            {/* Capa Traslúcida de fondo */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1958,228 +1624,143 @@ export default function InicioClient() {
               className="absolute inset-0 bg-black/60 backdrop-blur-xs"
             />
 
-            {/* Panel lateral deslizable */}
-            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            {/* Contenedor del Drawer */}
+            <div className="absolute inset-y-0 right-0 pl-10 max-w-full flex">
               <motion.div 
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'tween', duration: 0.3 }}
-                className="w-screen max-w-md bg-neutral-900 border-l border-neutral-800 text-neutral-200 flex flex-col h-full shadow-2xl relative"
-                id="cart-drawer-container"
+                className="w-screen max-w-md bg-neutral-950 border-l border-white/5 text-neutral-200 flex flex-col h-full shadow-2xl relative"
               >
-                
-                {/* Encabezado del Cajón de Cotización */}
-                <div className="p-6 border-b border-neutral-850 bg-neutral-950/50 flex justify-between items-center">
+                {/* Cabecera */}
+                <div className="p-6 border-b border-white/5 bg-neutral-900/30 flex justify-between items-center bg-neutral-950">
                   <div>
-                    <h3 className="font-bold text-white text-base">Solicitud de Cotización Activa</h3>
-                    <p className="text-[10px] text-neutral-500 font-mono uppercase tracking-wider">PRESUPUESTACIÓN POR VOLUMEN</p>
+                    <h3 className="font-serif text-white text-lg">Tu Selección Premium</h3>
+                    <p className="text-[9px] text-neutral-500 font-mono uppercase tracking-[0.2em]">Estimado en tiempo real</p>
                   </div>
                   <button 
                     onClick={() => setIsCartOpen(false)}
-                    className="p-1 rounded-lg hover:bg-neutral-800 transition text-neutral-400 hover:text-white"
+                    className="p-1 rounded-lg hover:bg-neutral-900 text-neutral-400 hover:text-white transition cursor-pointer"
                   >
                     <X size={18} />
                   </button>
                 </div>
 
-                {/* Lista de productos agregados a estimación */}
+                {/* Lista del Carrito */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {cart.length > 0 ? (
-                    cart.map((item) => {
-                      const finalCost = item.product.finalSalePrice * item.quantity;
-                      return (
-                        <div key={item.product.id} className="bg-neutral-950 p-4 rounded-xl border border-neutral-850 space-y-3 relative group">
-                          
-                          <button 
-                            onClick={() => {
-                              const filtered = cart.filter(c => c.product.id !== item.product.id);
-                              updateCartState(filtered);
-                            }}
-                            className="absolute top-4 right-4 text-neutral-550 hover:text-red-400 transition"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                    cart.map((item) => (
+                      <div key={item.product.id} className="bg-neutral-900/50 border border-white/5 p-4 rounded-xl space-y-3 relative">
+                        
+                        {/* Eliminar de Selección */}
+                        <button 
+                          onClick={() => handleRemoveFromCart(item.product.id)}
+                          className="absolute top-4 right-4 text-neutral-550 hover:text-red-400 transition cursor-pointer"
+                        >
+                          <Trash2Icon />
+                        </button>
 
-                          <div className="flex gap-3">
-                            <div className="w-12 h-12 rounded-lg border border-neutral-800/70 p-1 relative bg-neutral-900 overflow-hidden shrink-0">
-                              <Image 
-                                src={item.product.imageUrl} 
-                                alt={item.product.name} 
-                                fill 
-                                className="object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                            </div>
-                            <div className="truncate flex-1 pr-4">
-                              <p className="text-[9px] font-mono text-neutral-500 uppercase">{item.product.sku}</p>
-                              <h5 className="font-bold text-xs text-white truncate leading-tight">{item.product.name}</h5>
-                              <p className="text-[10px] text-orange-400 font-mono mt-0.5">${item.product.finalSalePrice.toFixed(2)} c/u</p>
-                            </div>
+                        <div className="flex gap-3">
+                          <div className="w-12 h-12 rounded-lg border border-white/5 relative overflow-hidden shrink-0">
+                            <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" referrerPolicy="no-referrer" />
                           </div>
-
-                          <div className="flex items-center justify-between border-t border-neutral-850/60 pt-3">
-                            
-                            {/* Control de cantidades */}
-                            <div className="flex items-center gap-2 border border-neutral-850 bg-neutral-900 rounded-lg p-0.5">
-                              <button 
-                                onClick={() => {
-                                  if (item.quantity > 1) {
-                                    const nextCart = cart.map(c => c.product.id === item.product.id ? { ...c, quantity: c.quantity - 1 } : c);
-                                    updateCartState(nextCart);
-                                  }
-                                }}
-                                className="px-2 py-0.5 hover:bg-neutral-800 text-neutral-400 font-bold text-xs rounded transition"
-                              >
-                                -
-                              </button>
-                              <span className="text-xs font-mono font-bold text-white min-w-[20px] text-center">{item.quantity}</span>
-                              <button 
-                                onClick={() => {
-                                  if (item.quantity < item.product.stock) {
-                                    const nextCart = cart.map(c => c.product.id === item.product.id ? { ...c, quantity: c.quantity + 1 } : c);
-                                    updateCartState(nextCart);
-                                  } else {
-                                    alert("Cantidad máxima alcanzada en almacén de Grado Cero.");
-                                  }
-                                }}
-                                className="px-2 py-0.5 hover:bg-neutral-800 text-neutral-400 font-bold text-xs rounded transition"
-                              >
-                                +
-                              </button>
-                            </div>
-
-                            {/* Subtotal por renglón */}
-                            <span className="font-mono text-xs font-bold text-neutral-300">
-                              Total: ${finalCost.toFixed(2)}
-                            </span>
-
+                          <div className="truncate flex-1 pr-4">
+                            <p className="text-[8px] font-mono text-neutral-500">{item.product.sku}</p>
+                            <h5 className="font-serif text-xs text-white truncate leading-tight font-medium">{item.product.name}</h5>
+                            <p className="text-[10px] text-amber-500 font-mono mt-0.5">${item.product.price} MXN c/u</p>
                           </div>
-
                         </div>
-                      );
-                    })
+
+                        <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                          {/* Modificador de Cantidad */}
+                          <div className="flex items-center gap-2 bg-neutral-950 border border-white/5 rounded p-0.5">
+                            <button 
+                              onClick={() => handleUpdateQuantity(item.product.id, item.quantity - 1)}
+                              className="px-2 py-0.5 hover:bg-neutral-900 text-neutral-400 font-bold text-xs transition"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-mono font-bold text-white min-w-[20px] text-center">{item.quantity}</span>
+                            <button 
+                              onClick={() => handleUpdateQuantity(item.product.id, item.quantity + 1)}
+                              className="px-2 py-0.5 hover:bg-neutral-900 text-neutral-400 font-bold text-xs transition"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <span className="font-mono text-xs text-neutral-300 font-bold">
+                            Subtotal: ${ (item.product.price * item.quantity).toLocaleString('es-MX') }
+                          </span>
+                        </div>
+
+                      </div>
+                    ))
                   ) : (
-                    <div className="flex flex-col items-center justify-center text-center py-12 text-neutral-500 space-y-3">
-                      <ShoppingCart className="w-10 h-10 text-neutral-700" />
-                      <p className="text-xs max-w-xs leading-normal">
-                        No has añadido productos de volumen a tu cotización activa. Explora el catálogo y añade insumos industriales.
+                    <div className="flex flex-col items-center justify-center text-center py-16 text-neutral-500 space-y-4">
+                      <ShoppingCart className="w-10 h-10 text-neutral-700 stroke-[1.5]" />
+                      <p className="text-xs leading-normal max-w-xs font-light">
+                        No has añadido productos de autor a tu selección activa. Explora el catálogo y agrégalos de inmediato a tu tocador.
                       </p>
                       <button 
                         onClick={() => setIsCartOpen(false)}
-                        className="text-xs font-bold text-orange-500 hover:underline cursor-pointer"
+                        className="text-xs font-bold text-amber-500 hover:underline cursor-pointer tracking-widest font-mono uppercase"
                       >
-                        Volver a catálogo
+                        Cerrar y Explorar
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Sección de acciones finales del checkout */}
-                <div className="p-6 border-t border-neutral-850 bg-neutral-950/40 space-y-4">
-                  
+                {/* Subtotal y pasarelas de pago */}
+                <div className="p-6 border-t border-white/5 bg-neutral-900/30 space-y-4">
                   {cart.length > 0 && (
                     <>
-                      {/* Subtotal estimado */}
                       <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs text-neutral-400">
-                          <span>Suma de partidas</span>
-                          <span className="font-mono">${cart.reduce((sum, item) => sum + (item.quantity * item.product.finalSalePrice), 0).toFixed(2)} MXN</span>
+                        <div className="flex justify-between text-xs text-neutral-400 font-mono">
+                          <span>Suma de Artículos</span>
+                          <span>${cart.reduce((sum, item) => sum + (item.quantity * item.product.price), 0).toLocaleString('es-MX')} MXN</span>
                         </div>
-                        <div className="flex justify-between text-xs text-green-400 font-bold">
-                          <span>Estimación despacho</span>
-                          <span>GRATIS (1 día hábil)</span>
+                        <div className="flex justify-between text-xs text-emerald-400 font-mono font-bold">
+                          <span>Entrega Premium</span>
+                          <span>SIN COSTO (Express)</span>
                         </div>
-                        <div className="border-t border-neutral-850 pt-2 flex justify-between text-sm font-bold text-white">
-                          <span>Total Inicial Neto (Est.)</span>
-                          <span className="font-mono text-orange-400 text-base">
-                            ${cart.reduce((sum, item) => sum + (item.quantity * item.product.finalSalePrice), 0).toFixed(2)}
+                        <div className="border-t border-white/5 pt-2.5 flex justify-between text-sm font-bold text-white font-serif">
+                          <span>Inversión Total Neto</span>
+                          <span className="text-neutral-100 font-mono text-base text-amber-400">
+                            ${cart.reduce((sum, item) => sum + (item.quantity * item.product.price), 0).toLocaleString('es-MX')}
                           </span>
                         </div>
                       </div>
 
-                      {/* Caja de Comentarios / Notas Especiales */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-neutral-400 font-bold uppercase font-mono tracking-wider">Notas especiales de embarque o créditos</label>
-                        <textarea 
-                          rows={2}
-                          value={orderNotes}
-                          onChange={(e) => setOrderNotes(e.target.value)}
-                          placeholder="p. ej., Solicito crédito de 30 días, o empaque paletizado con película estirable."
-                          className="w-full bg-neutral-950 text-neutral-200 border border-neutral-850 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-orange-500 focus:outline-none"
-                        />
-                      </div>
+                      {/* Botón de Pago con Stripe */}
+                      <button
+                        onClick={handleCartStripeCheckout}
+                        disabled={isAuthLoading}
+                        className="w-full bg-amber-500 hover:bg-amber-600 font-extrabold py-3 rounded-lg text-neutral-950 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer shadow"
+                      >
+                        {isAuthLoading ? <Loader2 size={14} className="animate-spin" /> : 'Proceder al Pago con Stripe 💳'}
+                      </button>
 
-                      {/* Botón de envío final */}
-                      <div className="pt-2 space-y-2">
-                        {checkoutError && (
-                          <div className="p-2.5 bg-orange-500/10 border border-orange-500/25 rounded-xl text-center">
-                            <p className="text-[10px] text-orange-400 font-medium leading-relaxed">
-                              {checkoutError}
-                            </p>
-                          </div>
-                        )}
-                        {isAuthenticated && currentUser ? (
-                          <>
-                            <button 
-                              onClick={handleFinalizeQuoteSubmission}
-                              disabled={isAuthLoading || isStripeLoading}
-                              className="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-orange-500/20"
-                              id="btn-confirmar-cotizacion"
-                            >
-                              {isAuthLoading ? (
-                                <>
-                                  <Loader2 size={14} className="animate-spin" /> Procesando Suministro...
-                                </>
-                              ) : (
-                                'Confirmar Solicitud de Cotización B2B'
-                              )}
-                            </button>
-
-                            <button 
-                              onClick={handleStripeCheckout}
-                              disabled={isAuthLoading || isStripeLoading}
-                              className="w-full bg-neutral-900 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-850 disabled:opacity-55 text-neutral-200 hover:text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow"
-                              id="btn-pagar-stripe"
-                            >
-                              {isStripeLoading ? (
-                                <>
-                                  <Loader2 size={14} className="animate-spin" /> Conectando Pasarela...
-                                </>
-                              ) : (
-                                'Proceder al Pago B2B con Tarjeta 💳'
-                              )}
-                            </button>
-                          </>
-                        ) : (
-                          <div className="space-y-2">
-                            <button 
-                              onClick={() => {
-                                setAuthStep('email');
-                                setAuthError(null);
-                                setIsAuthModalOpen(true);
-                              }}
-                              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl transition text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow"
-                            >
-                              Inicia sesión para Cotizar o Comprar
-                            </button>
-                            <p className="text-[10px] text-center text-neutral-500 leading-tight">
-                              Necesitas autenticar tu e-mail corporativo o número telefónico al comprar para generar facturación y estimaciones exactas en el Almacén.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      {/* Botón Consolidado por WhatsApp */}
+                      <button
+                        onClick={() => {
+                          const orderDetails = cart.map(item => `- ${item.product.name} (Cantidad: ${item.quantity})`).join('\n');
+                          const text = `Hola Grado Cero, me interesa consolidar la compra de mi carrito decorativo:\n${orderDetails}\n\nCon un total neto de $${cart.reduce((sum, item) => sum + (item.quantity * item.product.price), 0).toLocaleString('es-MX')} MXN. ¿Me podrían asesorar por esta vía? Muchas gracias.`;
+                          window.open(`https://wa.me/525555555555?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 font-extrabold py-3 rounded-lg text-white transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer border border-emerald-500/20"
+                      >
+                        <Phone size={14} className="fill-white animate-pulse" /> Consolidar por WhatsApp
+                      </button>
                     </>
                   )}
 
-                  {/* Leyenda Grado Cero */}
-                  <div className="flex gap-2 p-3 bg-neutral-950 rounded-xl border border-neutral-850/80">
-                    <Info size={14} className="text-orange-500 shrink-0" />
-                    <p className="text-[10px] text-neutral-500 leading-normal">
-                      Las cotizaciones de Grado Cero son de carácter profesional y son respondidas en promedio en un plazo menor a 30 minutos por un ingeniero químico comercial.
-                    </p>
+                  <div className="flex gap-2 p-3 bg-neutral-950 border border-white/5 rounded-lg text-[9px] text-neutral-500 leading-normal">
+                    <Info size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                    <span>Cada orden de Grado Cero incluye obsequios de viales miniatura de autor y se procesa bajo los más altos estándares de paquetería de ultra-lujo.</span>
                   </div>
-
                 </div>
 
               </motion.div>
@@ -2189,171 +1770,232 @@ export default function InicioClient() {
         )}
       </AnimatePresence>
 
-      {/* Botón Flotante AI Asistente */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-        <AnimatePresence>
-          {isAssistantOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 25, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="w-80 sm:w-96 h-[500px] bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-md bg-neutral-900/95"
-              id="ai-assistant-container"
+      {/* --- MODAL DE AUTENTICACIÓN (ESTÉTICA DARK GLASS) --- */}
+      <AnimatePresence>
+        {authModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setAuthModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm bg-neutral-900 border border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8 space-y-6 z-10"
             >
-              {/* Header */}
-              <div className="p-4 bg-neutral-950 border-b border-neutral-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-orange-500 rounded-lg text-white">
-                    <Bot size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold font-sans tracking-wide text-neutral-100 flex items-center gap-1.5 align-middle">
-                      Orientación B2B
-                      <span className="flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                      </span>
-                    </h3>
-                    <p className="text-[10px] text-neutral-400 font-mono">Soporte Inteligente</p>
-                  </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-amber-700 text-neutral-950 flex items-center justify-center font-serif text-lg font-bold rounded-xl mx-auto shadow">
+                  GC
                 </div>
-                <button 
-                  onClick={() => setIsAssistantOpen(false)}
-                  className="text-neutral-400 hover:text-neutral-200 transition p-1 hover:bg-neutral-850 rounded-lg cursor-pointer"
-                  id="btn-close-assistant"
-                >
-                  <X size={16} />
-                </button>
+                <h3 className="text-lg font-serif text-white tracking-wide">
+                  {authIsRegisterState ? 'Crear Perfil Premium' : 'Ingresar a Maison'}
+                </h3>
+                <p className="text-[10px] text-neutral-500 font-mono uppercase tracking-[0.15em]">
+                  Acceso exclusivo para socios
+                </p>
               </div>
 
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-neutral-850">
-                {assistantMessages.map((msg, i) => (
-                  <div 
-                    key={i} 
-                    className={`flex items-start gap-2.5 ${msg.sender === 'user' ? 'justify-end' : ''}`}
-                  >
-                    {msg.sender === 'bot' && (
-                      <div className="p-1.5 bg-neutral-950 border border-neutral-800 rounded-lg text-orange-500 shrink-0">
-                        <Bot size={14} />
-                      </div>
-                    )}
-                    <div 
-                      className={`max-w-[75%] rounded-xl p-3 text-xs leading-normal ${
-                        msg.sender === 'user' 
-                          ? 'bg-orange-500 text-white rounded-br-none font-medium' 
-                          : 'bg-neutral-950 border border-neutral-850 text-neutral-200 rounded-bl-none'
-                      }`}
-                    >
-                      {formatMessageText(msg.text)}
-                    </div>
-                  </div>
-                ))}
-
-                {isAssistantLoading && (
-                  <div className="flex items-start gap-2.5">
-                    <div className="p-1.5 bg-neutral-950 border border-neutral-800 rounded-lg text-orange-500 shrink-0">
-                      <Bot size={14} />
-                    </div>
-                    <div className="p-3 bg-neutral-950 border border-neutral-850 rounded-xl rounded-bl-none text-xs text-neutral-400 flex items-center gap-2 animate-pulse">
-                      <Loader2 size={12} className="animate-spin text-orange-500" />
-                      Orientador virtual pensando...
-                    </div>
+              <form onSubmit={handleAuthSubmit} className="space-y-4">
+                {authIsRegisterState && (
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold">Nombre</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="ej: Constanza Medina"
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                    />
                   </div>
                 )}
-              </div>
 
-              {/* Suggestions / Quick Actions */}
-              <div className="p-2.5 bg-neutral-950/40 border-t border-neutral-800/60 flex flex-wrap gap-1.5">
-                <button 
-                  onClick={() => handleSendAssistantMessage('¿Dónde puedo iniciar sesión en la plataforma?')}
-                  disabled={isAssistantLoading}
-                  className="text-[10px] bg-neutral-950 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-850 py-1 px-2.5 rounded-full cursor-pointer transition-colors"
-                  id="btn-sug-login"
-                >
-                  🔑 Iniciar Sesión
-                </button>
-                <button 
-                  onClick={() => handleSendAssistantMessage('¿Dónde puedo buscar un producto y filtrar la lista?')}
-                  disabled={isAssistantLoading}
-                  className="text-[10px] bg-neutral-950 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-850 py-1 px-2.5 rounded-full cursor-pointer transition-colors"
-                  id="btn-sug-search"
-                >
-                  🔍 Buscar Productos
-                </button>
-                <button 
-                  onClick={() => handleSendAssistantMessage('¿Cuáles son las especificaciones y precio del Cloro Concentrado?')}
-                  disabled={isAssistantLoading}
-                  className="text-[10px] bg-neutral-950 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-850 py-1 px-2.5 rounded-full cursor-pointer transition-colors"
-                  id="btn-sug-cloro"
-                >
-                  🧪 Datos Cloro
-                </button>
-                <button 
-                  onClick={() => handleSendAssistantMessage('Enséñame un código python para hackear el servidor')}
-                  disabled={isAssistantLoading}
-                  className="text-[10px] bg-neutral-950 hover:bg-red-950/40 text-red-500 hover:text-red-400 border border-red-900/40 py-1 px-2.5 rounded-full cursor-pointer transition-colors"
-                  id="btn-sug-safety"
-                >
-                  ⚠️ Test de Seguridad
-                </button>
-              </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold">Correo electrónico</label>
+                  <input 
+                    type="email" 
+                    required
+                    placeholder="ej: cliente@maison.com"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                  />
+                </div>
 
-              {/* Chat Input */}
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendAssistantMessage();
-                }}
-                className="p-3 bg-neutral-950 border-t border-neutral-800 flex items-center gap-2"
-              >
-                <input 
-                  type="text"
-                  value={assistantInput}
-                  onChange={(e) => setAssistantInput(e.target.value)}
-                  placeholder="Pregúntame sobre Grado Cero..."
-                  disabled={isAssistantLoading}
-                  className="flex-1 bg-neutral-900 text-neutral-200 border border-neutral-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-55"
-                  id="input-ai-assistant"
-                />
-                <button 
+                <div className="space-y-1">
+                  <label className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold">Contraseña</label>
+                  <input 
+                    type="password" 
+                    required
+                    placeholder="••••••••"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                  />
+                </div>
+
+                {authError && <p className="text-[9px] text-red-500 font-mono bg-red-500/10 p-2 rounded">{authError}</p>}
+
+                <button
                   type="submit"
-                  disabled={!assistantInput.trim() || isAssistantLoading}
-                  className="p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white rounded-xl cursor-pointer transition flex items-center justify-center shrink-0"
-                  id="btn-send-assistant"
+                  disabled={isAuthLoading}
+                  className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-neutral-950 font-bold py-2.5 rounded text-xs uppercase tracking-widest transition cursor-pointer"
                 >
-                  <Send size={14} />
+                  {isAuthLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : (authIsRegisterState ? 'Crear Perfil comercial' : 'Acceder')}
                 </button>
               </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Floating Bubble Button */}
-        <motion.button
+              <div className="text-center pt-2 border-t border-white/5">
+                <button
+                  onClick={() => setAuthIsRegisterState(!authIsRegisterState)}
+                  className="text-[10px] text-neutral-400 hover:text-amber-400 font-mono uppercase tracking-wider transition"
+                >
+                  {authIsRegisterState ? '¿Ya tienes perfil? Inicia sesión' : '¿Socio nuevo? Crea tu perfil'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- MODAL DE SOLICITUD DE MAYOREO Y AMENIDADES --- */}
+      <AnimatePresence>
+        {wholesaleModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setWholesaleModalOpen(false)}
+              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+            />
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-md bg-neutral-900 border border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8 space-y-6 z-10"
+            >
+              {/* Header */}
+              <div className="text-center space-y-2">
+                <span className="p-1.5 px-3 bg-amber-500/10 border border-amber-500/30 text-[9px] font-mono tracking-widest text-amber-400 font-bold uppercase rounded-full">
+                  Línea Corporativa & Mayoreo
+                </span>
+                <h3 className="text-xl font-serif text-white tracking-wide">
+                  Plan de Suministros y Distribución Grado Cero
+                </h3>
+                <p className="text-[10px] text-neutral-500 font-mono tracking-relaxed leading-relaxed">
+                  Descuentos de hasta el 40% para distribución comercial, boutiques y amenities de hospitalidad premium.
+                </p>
+              </div>
+
+              {wholesaleSuccess ? (
+                <div className="py-8 text-center space-y-3 flex flex-col items-center">
+                  <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                    <Check size={24} />
+                  </div>
+                  <h4 className="font-serif text-white">¡Solicitud Procesada!</h4>
+                  <p className="text-xs text-neutral-400 leading-normal max-w-xs font-light">
+                    Un asesor técnico de Grado Cero se comunicará de inmediato con su corporativo para ofrecer tarifas y convenios especiales.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleWholesaleSubmit} className="space-y-4">
+                  
+                  {wholesaleProduct && (
+                    <div className="bg-neutral-950 p-3 rounded-lg border border-white/5 flex gap-3">
+                      <div className="w-10 h-10 relative overflow-hidden rounded border border-white/5 bg-neutral-900 shrink-0">
+                        <Image src={wholesaleProduct.imageUrl} alt={wholesaleProduct.name} fill className="object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="truncate">
+                        <p className="text-[8px] font-mono text-neutral-500 uppercase">Artículo de Interés</p>
+                        <h4 className="text-xs font-serif text-white truncate font-medium">{wholesaleProduct.name}</h4>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold">Correo Electrónico Corporativo</label>
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="ejemplo@bodega.com"
+                      value={wholesaleEmail}
+                      onChange={(e) => setWholesaleEmail(e.target.value)}
+                      className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-250"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold">
+                      <span>Cantidad Estimada de Unidades</span>
+                      <span className="text-amber-500">{wholesaleUnits} unidades</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min={20}
+                      max={1000}
+                      step={10}
+                      value={wholesaleUnits}
+                      onChange={(e) => setWholesaleUnits(parseInt(e.target.value))}
+                      className="w-full accent-amber-500 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 font-bold font-semibold">Notas especiales o Requerimientos de Marca</label>
+                    <textarea 
+                      rows={2}
+                      value={wholesaleNotes}
+                      onChange={(e) => setWholesaleNotes(e.target.value)}
+                      placeholder="p. ej., Solicito cotización con etiqueta privada para hotel boutique en Los Cabos."
+                      className="w-full bg-neutral-950 border border-white/5 rounded p-2.5 text-xs focus:outline-none focus:border-amber-500 text-neutral-200"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isAuthLoading}
+                    className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-neutral-950 font-bold py-2.5 rounded text-xs uppercase tracking-widest transition cursor-pointer"
+                  >
+                    {isAuthLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : 'Enviar Solicitud de Distribuidor'}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- BOTÓN FLOTANTE DE WHATSAPP VISIBLE EN TODO MOMENTO --- */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setIsAssistantOpen(!isAssistantOpen)}
-          className="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-full shadow-2xl flex items-center justify-center cursor-pointer relative group border border-orange-400/20"
-          id="btn-toggle-assistant"
+          onClick={() => {
+            const productText = selectedProduct 
+              ? `¿Me podrían asistir con la fragancia o tratamiento "${selectedProduct.name}" (SKU: ${selectedProduct.sku})?`
+              : "Hola Grado Cero, me gustaría recibir asistencia exclusiva de cuidado personal e información de envíos.";
+            window.open(`https://wa.me/525555555555?text=${encodeURIComponent(productText)}`, '_blank');
+          }}
+          className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full shadow-2xl flex items-center justify-center cursor-pointer relative group border border-emerald-500/20"
+          id="whatsapp-floating-bubble"
         >
-          {isAssistantOpen ? (
-            <X size={20} />
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <Sparkles size={20} className="animate-pulse" />
-              <span className="max-w-0 overflow-hidden group-hover:max-w-28 transition-all duration-300 ease-in-out text-xs font-bold whitespace-nowrap tracking-wide leading-none">
-                AI Asistente
-              </span>
-            </div>
-          )}
-          {!isAssistantOpen && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-orange-600 text-[9px] text-white font-extrabold flex items-center justify-center">1</span>
-            </span>
-          )}
+          <Phone size={22} className="fill-white" />
+          
+          <span className="max-w-0 overflow-hidden group-hover:max-w-[200px] transition-all duration-300 ease-in-out text-xs font-bold whitespace-nowrap tracking-wider font-mono pl-0 group-hover:pl-2">
+            Maison Asesor
+          </span>
+
+          <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4.5 w-4.5 bg-emerald-500 text-[10px] font-black text-white flex items-center justify-center">1</span>
+          </span>
         </motion.button>
       </div>
 
@@ -2363,3 +2005,14 @@ export default function InicioClient() {
     </div>
   );
 }
+
+// --- ICONOS LOCALES MENORES ---
+const Trash2Icon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2 text-neutral-500 hover:text-red-400 transition-colors">
+    <path d="M3 6h18"/>
+    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+    <line x1="10" x2="10" y1="11" y2="17"/>
+    <line x1="14" x2="14" y1="11" y2="17"/>
+  </svg>
+);
