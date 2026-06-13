@@ -1,13 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -29,15 +27,63 @@ enum QuoteStatus {
   COMPLETED
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      Role     @default(STAFF)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  quotes    Quote[]
-  orders    Order[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(CUSTOMER)
+  accounts      Account[]
+  sessions      Session[]
+  quotes        Quote[]
+  orders        Order[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Supplier {
@@ -52,30 +98,24 @@ model Supplier {
 }
 
 model Product {
-  id            String        @id @default(cuid())
-  sku           String        @unique
-  name          String
-  description   String?
-  category      String
-  imageUrl      String?
-  
-  // Costs and margins
-  purchaseCost  Float
-  
-  // Inventory
-  stock         Int           @default(0)
-  
-  // Status / Soft Delete
-  status        ProductStatus @default(DRAFT)
-  
-  // Relations
-  supplierId    String
-  supplier      Supplier      @relation(fields: [supplierId], references: [id])
-  quoteItems    QuoteItem[]
-  orderItems    OrderItem[]
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  sku               String        @unique
+  name              String
+  description       String?
+  category          String
+  imageUrl          String?
+  purchaseCostCents Int
+  stock             Int           @default(0)
+  status            ProductStatus @default(DRAFT)
+  supplierId        String
+  supplier          Supplier      @relation(fields: [supplierId], references: [id])
+  quoteItems        QuoteItem[]
+  orderItems        OrderItem[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([status, category])
+  @@index([supplierId])
 }
 
 model Client {
@@ -94,48 +134,62 @@ model Quote {
   id        String      @id @default(cuid())
   status    QuoteStatus @default(PENDING)
   notes     String?
-  
-  // Relations
   clientId  String
   client    Client      @relation(fields: [clientId], references: [id])
   userId    String
   user      User        @relation(fields: [userId], references: [id])
   items     QuoteItem[]
-  
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+
+  @@index([status, createdAt])
+  @@index([clientId])
+  @@index([userId])
 }
 
 model QuoteItem {
-  id        String  @id @default(cuid())
-  quantity  Int
-  unitPrice Float   // Price saved at the time of quotation
-  
-  // Relations
-  quoteId   String
-  quote     Quote   @relation(fields: [quoteId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
+  id             String  @id @default(cuid())
+  quantity       Int
+  unitPriceCents Int
+  quoteId        String
+  quote          Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product @relation(fields: [productId], references: [id])
+
+  @@index([quoteId])
+  @@index([productId])
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  userId        String      // Relación con el usuario que compra
-  user          User        @relation(fields: [userId], references: [id])
-  status        String      @default("PENDING") // PENDING, PAID, FAILED
-  total         Float
-  paymentId     String?     // ID de la transacción en Stripe o Mercado Pago
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  items         OrderItem[] 
+  id                      String      @id @default(cuid())
+  userId                  String
+  user                    User        @relation(fields: [userId], references: [id])
+  status                  OrderStatus @default(PENDING)
+  totalCents              Int
+  stripeCheckoutSessionId String?     @unique
+  items                   OrderItem[]
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId])
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float   // Guardas el precio al momento de la compra
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  priceCents Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model StripeEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
 }

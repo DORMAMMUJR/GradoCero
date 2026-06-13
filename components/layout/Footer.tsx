@@ -3,7 +3,6 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { 
-  Building2, 
   Mail, 
   Phone, 
   ShieldCheck, 
@@ -18,7 +17,6 @@ import {
   ArrowUp,
   MapPin
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 /**
  * Componente Footer Corporativo de Grado Cero B2B.

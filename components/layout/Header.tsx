@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, LogIn, Menu, ShoppingCart, User } from 'lucide-react';
+import { Bot, LogIn, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 /**

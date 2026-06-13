@@ -16,12 +16,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  * Cumple con las directrices de accesibilidad y soporte de clases de Tailwind.
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', children, id, ...props }, ref) => {
+  ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
     // Definición de estilos base y variantes utilizando utility classes de Tailwind
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]';
+    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-xl transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-50 disabled:pointer-events-none';
     
     const variants = {
-      primary: 'bg-orange-500 hover:bg-orange-600 text-white border border-orange-400/20 focus:ring-orange-500',
+      primary: 'bg-amber-400 hover:bg-amber-300 text-neutral-950 border border-amber-300/30',
       secondary: 'bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border border-neutral-700 focus:ring-neutral-600',
       outline: 'bg-transparent hover:bg-neutral-900 text-neutral-200 border border-neutral-800 hover:border-neutral-700 focus:ring-neutral-800',
       danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
@@ -37,7 +37,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        id={id || `btn-ui-${Math.random().toString(36).substr(2, 9)}`}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         {...props}
       >

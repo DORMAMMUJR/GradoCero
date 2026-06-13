@@ -2,9 +2,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { ShieldAlert, ShieldCheck, Mail, Lock, Key, Users, Eye } from 'lucide-react';
-
-export const dynamic = 'force-dynamic';
+import { ShieldAlert, ShieldCheck, Lock, Key, Users, Eye } from 'lucide-react';
 
 /**
  * Página de Aviso de Privacidad Integral de Grado Cero B2B.

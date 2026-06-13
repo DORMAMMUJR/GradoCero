@@ -2,9 +2,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { ShieldCheck, Scale, FileText, Landmark, Truck, AlertOctagon } from 'lucide-react';
-
-export const dynamic = 'force-dynamic';
+import { Scale, Landmark, Truck, AlertOctagon } from 'lucide-react';
 
 /**
  * Página de Términos y Condiciones de Grado Cero B2B.
