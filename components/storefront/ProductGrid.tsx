@@ -81,24 +81,45 @@ export function ProductGrid({
               <button
                 type="button"
                 onClick={() => onSelect(product)}
-                className="flex size-9 shrink-0 items-center justify-center rounded-sm border border-white/10 bg-white/[0.03] text-neutral-400 transition hover:border-amber-500/40 hover:text-amber-300"
+                className="flex size-9 shrink-0 items-center justify-center rounded-sm border border-white/10 bg-white/[0.03] text-neutral-200 transition hover:border-amber-500/40 hover:text-amber-300"
                 aria-label={`Abrir ${product.name}`}
               >
                 <ArrowUpRight aria-hidden="true" className="size-4" />
               </button>
             </div>
 
-            <p className="mt-3 line-clamp-2 text-sm leading-6 text-neutral-400">
+            <p className="mt-1 text-[0.8rem] font-medium text-neutral-300">
+              Fabricante: <span className="text-white">{product.supplierName}</span>
+            </p>
+
+            <p className="mt-3 line-clamp-2 text-sm leading-6 text-neutral-200">
               {product.description ||
                 'Solución profesional para operación B2B.'}
             </p>
 
             <div className="mt-auto pt-6">
-              <div className="border-t border-white/10 pt-5">
-                <p className="text-xs text-neutral-500">Precio de venta</p>
-                <p className="mt-1 text-2xl font-semibold text-white">
-                  {formatMoney(product.salePriceCents)}
-                </p>
+              <div className="flex items-end justify-between border-t border-white/10 pt-5">
+                <div>
+                  <p className="text-xs text-neutral-300">Precio de venta</p>
+                  <p className="mt-1 text-2xl font-semibold text-white">
+                    {formatMoney(product.salePriceCents)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {product.stock > 10 ? (
+                    <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
+                      {product.stock} Disp.
+                    </span>
+                  ) : product.stock > 0 ? (
+                    <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded animate-pulse">
+                      ¡Últimas {product.stock}!
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold text-rose-500 bg-rose-500/10 px-2 py-1 rounded">
+                      Sin Stock
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 type="button"

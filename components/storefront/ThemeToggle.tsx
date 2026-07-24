@@ -9,7 +9,7 @@ import {
 } from '@/lib/theme';
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
     const currentTheme = resolveInitialTheme(
@@ -33,7 +33,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="icon-button"
+      className="flex items-center justify-center text-neutral-400 transition hover:text-white"
       aria-label={`Cambiar a tema ${nextThemeLabel}`}
       title={`Cambiar a tema ${nextThemeLabel}`}
     >

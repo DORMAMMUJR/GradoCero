@@ -6,14 +6,19 @@ export function resolveInitialTheme(
   savedTheme: string | null,
   systemPrefersDark: boolean,
 ): Theme {
-  return 'dark';
+  if (savedTheme) {
+    return savedTheme as Theme;
+  }
+  return 'light';
 }
 
 export const themeInitScript = `
   try {
-    document.documentElement.dataset.theme = 'dark';
-    localStorage.setItem('${THEME_STORAGE_KEY}', 'dark');
+    const saved = localStorage.getItem('${THEME_STORAGE_KEY}');
+    const theme = saved ? saved : 'light';
+    document.documentElement.dataset.theme = theme;
   } catch {
-    document.documentElement.dataset.theme = 'dark';
+    document.documentElement.dataset.theme = 'light';
   }
 `;
+
